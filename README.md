@@ -6,6 +6,8 @@ machine apart, slice it open, step through its parts and watch the magnetic flux
 Machines included:
 
 - Single-phase transformer (core type)
+- Three-phase oil-immersed distribution transformer (11 kV / 433 V, ONAN) with tank, oil,
+  conservator, breather, Buchholz relay, radiators, bushings, tap switch and the other fittings
 - DC shunt motor (two-pole)
 - Three-phase squirrel-cage induction motor (two-pole, TEFC)
 - Three-phase salient-pole alternator (four-pole)
@@ -21,6 +23,7 @@ css/style.css               colours, fonts and layout (light and dark themes)
 js/core.js                  the 3D viewer, view modes and page logic (normally left alone)
 js/machines/                one file per machine
     transformer.js
+    distribution-transformer.js
     dc-motor.js
     induction-motor.js
     alternator.js
@@ -94,19 +97,20 @@ Inside `build: function (k, m) { ... }`, `k` holds the helpers and `m` is the ma
 | Helper | What it makes |
 | --- | --- |
 | `part({ name, role, material, look, casing })` | one entry in the components list. `casing: true` fades it out in Flux view |
-| `add(part, geometry, material, { pos, rot, ex, rotor })` | puts a piece in the scene. `ex` is the exploded offset at 100% Separation; `rotor: true` makes it turn |
+| `add(part, geometry, material, { pos, rot, ex, rotor, opacity })` | puts a piece in the scene. `ex` is the exploded offset at 100% Separation; `rotor: true` makes it turn; `opacity` below 1 keeps it see-through (oil, glass) |
 | `annulus(rOuter, rInner, length, a0, a1)` | a tube along z; give `a0`, `a1` (radians) for a sector such as a pole shoe or commutator segment |
 | `cyl(radius, length)` | a solid cylinder along y (rotate by `[Math.PI / 2, 0, 0]` to lie along z) |
 | `ringRR(w, d, wall, radius, height)` | a coil wound round a rectangular limb, height along y |
 | `frameShape(W, H, R, w, h, r)` + `extrude(shape, depth)` | a rounded rectangle with a hole, such as a transformer lamination |
 | `slotPts(r, n, depth, width, dir)` + `polyShape(outline, holes)` + `extrude(...)` | slotted stator and rotor laminations |
 | `circlePts(r, n, cx, cy)` | a circle outline for `polyShape` outlines and holes |
-| `makeFlux(loops, perLoop, size)` | flux particles round closed loops of points |
-| `fluxMaterial(opacity)` | a see-through material in the flux colour, for arrows |
+| `makeFlux(loops, perLoop, size, colour)` | particles round closed loops of points; colour defaults to `flux` (use `copper` for oil flow) |
+| `fluxMaterial(opacity, colour)` | a see-through material in the flux colour, for arrows |
+| `material(name, extra)` | a named material with extra settings, such as a canvas texture for a rating plate |
 | `THREE`, `V(x, y, z)`, `pol(r, angle, z)`, `TAU` | three.js itself and small shortcuts |
 
-Materials: `lamA lamB steel copper copperDk board paint shaft alu carbon brass porcelain mica dark R Y B`
-(`R`, `Y`, `B` are the phase colours).
+Materials: `lamA lamB steel copper copperDk board paint shaft alu carbon brass porcelain mica dark R Y B oil glass gel`
+(`R`, `Y`, `B` are the phase colours; `oil` and `glass` look best with `opacity`).
 
 Settings on `m`:
 
@@ -121,8 +125,8 @@ Settings on `m`:
 
 ## Ideas for next machines
 
-Three-phase transformer, synchronous motor, universal motor, stepper motor,
-BLDC motor, shaded-pole motor, current transformer.
+Synchronous motor, universal motor, stepper motor, BLDC motor, shaded-pole motor,
+current transformer, on-load tap changer.
 
 ## Credits
 
