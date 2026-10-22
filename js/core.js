@@ -50,7 +50,7 @@ window.Electrica = (function () {
 
     /* ---------- renderer, camera, lights ---------- */
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.localClippingEnabled = true;
     renderer.domElement.className = 'gl';
     stageEl.insertBefore(renderer.domElement, stageEl.firstChild);
@@ -274,14 +274,15 @@ window.Electrica = (function () {
     function frameView(sep, instant, dir) {
       const box = boxAt(cur, cur.meshes, sep), c = box.getCenter(V(0, 0, 0)), r = box.getSize(V(0, 0, 0)).length() / 2;
       const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect), f = Math.min(vf, hf);
-      const dist = Math.min(55, (r / Math.sin(f / 2)) * 0.9);
+      const dist = Math.min(55, (r / Math.sin(f / 2)) * (camera.aspect < 0.8 ? 0.92 : 0.86));
       const d = (dir || camera.position.clone().sub(controls.target)).clone().normalize();
+      c.y -= r * 0.08;   /* sit the machine a little high, clear of the controls along the bottom */
       flyTo(c, c.clone().addScaledVector(d, dist), instant);
     }
     function focusPart(i) {
       const p = cur.parts[i]; if (!p) return;
       const box = boxAt(cur, p.meshes, state.sepTarget), c = box.getCenter(V(0, 0, 0)), size = box.getSize(V(0, 0, 0)).length();
-      const dist = Math.max(4, Math.min(16, size * 2.1 + 2.5));
+      const dist = Math.max(3.6, Math.min(15, size * 1.9 + 2.2));
       const d = camera.position.clone().sub(controls.target).normalize();
       flyTo(c, c.clone().addScaledVector(d, dist));
     }
@@ -373,6 +374,30 @@ window.Electrica = (function () {
       else { refreshLook(); frameView(sepT, instant); }
     }
     modeBtns.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+    /* Focus view hides the side panels; Full screen fills the screen with the viewer. */
+    const appEl = $('#app'), viewerEl = $('#viewer'), focusBtn = $('#focusBtn'), fsBtn = $('#fsBtn');
+    function reframeSoon() { requestAnimationFrame(() => requestAnimationFrame(() => { resize(); if (!cur) return; if (state.mode === 'walkthrough' && state.sel >= 0) focusPart(state.sel); else frameView(state.sepTarget); })); }
+    function setFocus(on, quiet) {
+      appEl.classList.toggle('focus', on);
+      focusBtn.setAttribute('aria-pressed', String(on));
+      focusBtn.textContent = on ? 'Show panels' : 'Focus view';
+      try { localStorage.setItem('electrica-focus', on ? '1' : '0'); } catch (e) { /* remembering is optional */ }
+      if (!quiet) reframeSoon();
+    }
+    focusBtn.addEventListener('click', () => setFocus(!appEl.classList.contains('focus')));
+    try { if (localStorage.getItem('electrica-focus') === '1') setFocus(true, true); } catch (e) { /* ignore */ }
+    if (document.fullscreenEnabled && viewerEl.requestFullscreen) {
+      fsBtn.hidden = false;
+      fsBtn.addEventListener('click', () => {
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+        else viewerEl.requestFullscreen().catch(() => {});
+      });
+      document.addEventListener('fullscreenchange', () => {
+        fsBtn.textContent = document.fullscreenElement ? 'Exit full screen' : 'Full screen';
+        reframeSoon();
+      });
+    }
+
     $('#prev').addEventListener('click', () => { if (cur) selectPart((state.step - 1 + cur.parts.length) % cur.parts.length, true); });
     $('#next').addEventListener('click', () => { if (cur) selectPart((state.step + 1) % cur.parts.length, true); });
 
