@@ -12,13 +12,10 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="app">
+<div class="app" id="app">
   <header class="top">
-    <div>
-      <p class="brand">Electr<span>i</span>ca</p>
-      <p class="tag">The electrical machine collection</p>
-    </div>
-    <p class="note">Take electrical machines apart, part by part. Animations are slowed down, and the ratings shown are examples for teaching.</p>
+    <p class="brand">Electr<span>i</span>ca <small>The electrical machine collection</small></p>
+    <p class="note">Animations are slowed down. Ratings are examples for teaching.</p>
   </header>
 
   <section class="mach" aria-labelledby="machH">
@@ -27,35 +24,43 @@
   </section>
 
   <main class="bay">
-    <div class="bay-head">
-      <h1 id="mName">Electrical machines</h1>
-      <p id="mSub">Loading</p>
-    </div>
-    <div class="stage" id="stage">
-      <div class="markers" id="markers" hidden></div>
-      <p class="hint">Drag to orbit · Scroll or pinch to zoom · Click a part</p>
-      <div class="scope" id="scope" hidden>
+    <div class="viewer" id="viewer">
+      <div class="stage" id="stage">
+        <div class="markers" id="markers" hidden></div>
+        <div class="status" id="status">Preparing machine geometry</div>
+      </div>
+      <div class="bay-head ov">
+        <h1 id="mName">Electrical machines</h1>
+        <p id="mSub">Loading</p>
+        <p class="hint">Drag to orbit · Scroll or pinch to zoom · Click a part</p>
+      </div>
+      <div class="viewtools ov">
+        <button type="button" class="tool" id="focusBtn" aria-pressed="false">Focus view</button>
+        <button type="button" class="tool" id="fsBtn" hidden>Full screen</button>
+      </div>
+      <div class="scope ov" id="scope" hidden>
         <div class="legend" id="legend"></div>
         <canvas id="scopeC" aria-label="Waveforms for this machine"></canvas>
         <p class="scope-note" id="scopeNote"></p>
       </div>
-      <div class="status" id="status">Preparing machine geometry</div>
-    </div>
-    <div class="controls">
-      <div class="seg" role="group" aria-label="View">
-        <button type="button" data-mode="assembled" aria-pressed="true">Assembled</button>
-        <button type="button" data-mode="cutaway" aria-pressed="false">Cutaway</button>
-        <button type="button" data-mode="exploded" aria-pressed="false">Exploded</button>
-        <button type="button" data-mode="walkthrough" aria-pressed="false">Walkthrough</button>
-        <button type="button" data-mode="flux" aria-pressed="false">Flux</button>
+      <div class="dock ov">
+        <div class="walk" id="walk" hidden>
+          <button type="button" id="prev">Previous</button>
+          <p id="walkText"></p>
+          <button type="button" id="next">Next</button>
+        </div>
+        <div class="controls">
+          <div class="seg" role="group" aria-label="View">
+            <button type="button" data-mode="assembled" aria-pressed="true">Assembled</button>
+            <button type="button" data-mode="cutaway" aria-pressed="false">Cutaway</button>
+            <button type="button" data-mode="exploded" aria-pressed="false">Exploded</button>
+            <button type="button" data-mode="walkthrough" aria-pressed="false">Walkthrough</button>
+            <button type="button" data-mode="flux" aria-pressed="false">Flux</button>
+          </div>
+          <label class="slider" for="sep">Separation <input type="range" id="sep" min="0" max="100" value="0"><output id="sepOut" for="sep">0%</output></label>
+          <button type="button" class="run" id="run" aria-pressed="false">Run</button>
+        </div>
       </div>
-      <label class="slider" for="sep">Separation <input type="range" id="sep" min="0" max="100" value="0"><output id="sepOut" for="sep">0%</output></label>
-      <button type="button" class="run" id="run" aria-pressed="false">Run</button>
-    </div>
-    <div class="walk" id="walk" hidden>
-      <button type="button" id="prev">Previous</button>
-      <p id="walkText"></p>
-      <button type="button" id="next">Next</button>
     </div>
   </main>
 
