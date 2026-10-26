@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Electrica Number Systems</title>
+  <meta name="description" content="Module 1 of digital electronics, worked step by step: number systems, radix conversion, complements, signed numbers, complement arithmetic and binary codes.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/digital.css">
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <p class="brand">Electr<span>i</span>ca <small>Digital electronics · Module 1</small></p>
+    <p class="note">Type your own numbers. Every step is worked from them.</p>
+    <p class="credit">Prepared by <b>Dr M. V. Srikanth</b>, EEE, VWU</p>
+    <nav class="sitenav" aria-label="Sections">
+      <a href="index.html">Machines</a>
+      <a href="substation.html">Power systems</a>
+      <a href="#" aria-current="page">Digital</a>
+    </nav>
+  </header>
+
+  <section class="topicsSec" aria-labelledby="topH">
+    <h2 class="eyebrow" id="topH">Number systems <span>8 topics</span></h2>
+    <div class="topics" id="topics"></div>
+  </section>
+
+  <main class="bay">
+    <div class="board" id="board">
+      <div class="bhead">
+        <div>
+          <p class="kicker" id="tKick">Module 1</p>
+          <h1 id="tName">Number systems</h1>
+          <p id="tSub">Loading</p>
+        </div>
+        <div class="viewtools">
+          <button type="button" class="tool" id="focusBtn" aria-pressed="false">Focus view</button>
+          <button type="button" class="tool" id="fsBtn" hidden>Full screen</button>
+        </div>
+      </div>
+      <div class="ctrls" id="ctrlBar">
+        <div class="ctrls-in" id="ctrls"></div>
+        <p class="ctrl-err" id="ctrlErr" role="status" hidden></p>
+      </div>
+      <div class="stage" id="stage"><div class="vz" id="vz"><p class="vz-msg">Preparing the drawing board</p></div></div>
+      <div class="dock">
+        <div class="prog" aria-hidden="true"><i id="progBar"></i></div>
+        <div class="walk">
+          <button type="button" class="navbtn" id="prev">Previous</button>
+          <p id="walkText" aria-live="polite"></p>
+          <button type="button" class="navbtn primary" id="next">Next</button>
+        </div>
+        <div class="dock-x">
+          <button type="button" class="run" id="play" aria-pressed="false">Play</button>
+          <button type="button" class="tool" id="first">Restart</button>
+          <button type="button" class="tool" id="last">Show answer</button>
+          <button type="button" class="tool" id="rnd">New example</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <section class="stepsSec" aria-labelledby="stepsH">
+    <h2 class="eyebrow" id="stepsH">Steps <span id="stepCount"></span></h2>
+    <ol class="parts" id="steps"></ol>
+  </section>
+
+  <aside class="info">
+    <section class="plate" id="plate" aria-label="Key values"></section>
+    <section class="detail" id="detail" aria-live="polite"></section>
+    <section class="principle" id="principle"></section>
+    <section class="slipsSec" id="slips"></section>
+  </aside>
+</div>
+
+<script src="js/digital/core.js"></script>
+<script src="js/digital/topics/01-digital-systems.js"></script>
+<script src="js/digital/topics/02-number-systems.js"></script>
+<script src="js/digital/topics/03-radix-conversion.js"></script>
+<script src="js/digital/topics/04-complements.js"></script>
+<script src="js/digital/topics/05-signed-numbers.js"></script>
+<script src="js/digital/topics/06-complement-arithmetic.js"></script>
+<script src="js/digital/topics/07-binary-codes.js"></script>
+<script src="js/digital/topics/08-gray-binary.js"></script>
+<script>ND.start();</script>
+</body>
+</html>

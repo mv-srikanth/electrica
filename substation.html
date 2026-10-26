@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Electrica Substation</title>
-  <meta name="description" content="Interactive 3D 110/22 kV zone substation with a live single-line diagram: identify the equipment, follow the power flow, and practise switching with interlocks and fault scenarios.">
+  <meta name="description" content="A working 110 / 22 kV zone substation in 3D: operate breakers and switches on a live single-line diagram, follow the power flow and practise switching.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,11 +15,12 @@
 <body>
 <div class="sub-app" id="app">
   <header class="top">
-    <p class="brand">Electr<span>i</span>ca <small>Zone substation</small></p>
+    <p class="brand">Electr<span>i</span>ca <small>Power systems · Zone substation</small></p>
     <p class="credit">Prepared by <b>Dr M. V. Srikanth</b>, EEE, VWU</p>
     <nav class="sitenav" aria-label="Sections">
       <a href="index.html">Machines</a>
-      <a href="substation.html" aria-current="page">Substation</a>
+      <a href="#" aria-current="page">Power systems</a>
+      <a href="digital.html">Digital</a>
     </nav>
   </header>
 
@@ -97,10 +98,10 @@
 <script src="js/vendor/three.min.js"></script>
 <script src="js/vendor/OrbitControls.js"></script>
 <!-- the substation: text, network logic, single-line diagram, 3D model, page -->
-<script src="js/substation/data.js"></script>
-<script src="js/substation/network.js"></script>
-<script src="js/substation/sld.js"></script>
-<script src="js/substation/scene.js"></script>
-<script src="js/substation/app.js"></script>
+<script src="js/power-systems/substation/data.js"></script>
+<script src="js/power-systems/substation/network.js"></script>
+<script src="js/power-systems/substation/sld.js"></script>
+<script src="js/power-systems/substation/scene.js"></script>
+<script src="js/power-systems/substation/app.js"></script>
 </body>
 </html>
