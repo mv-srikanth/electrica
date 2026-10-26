@@ -16,6 +16,11 @@
   <header class="top">
     <p class="brand">Electr<span>i</span>ca <small>The electrical machine collection</small></p>
     <p class="note">Animations are slowed down. Ratings are examples for teaching.</p>
+    <p class="credit">Prepared by <b>Dr M. V. Srikanth</b>, EEE, VWU</p>
+    <nav class="sitenav" aria-label="Sections">
+      <a href="index.html" aria-current="page">Machines</a>
+      <a href="substation.html">Substation</a>
+    </nav>
   </header>
 
   <section class="mach" aria-labelledby="machH">
@@ -71,6 +76,7 @@
 
   <aside class="info">
     <section class="plate" id="plate" aria-label="Rating plate"></section>
+    <section class="calc" id="calc" hidden></section>
     <section class="principle" id="principle"></section>
     <section class="detail" id="detail" aria-live="polite"></section>
   </aside>
@@ -85,6 +91,8 @@
 
 <!-- One file per machine. They appear in the list in this order.
      To add a machine: copy js/machines/_template.js, then add its script line here. -->
+<script src="js/machines/magnetic-circuit-series.js"></script>
+<script src="js/machines/magnetic-circuit-parallel.js"></script>
 <script src="js/machines/transformer.js"></script>
 <script src="js/machines/distribution-transformer.js"></script>
 <script src="js/machines/dc-motor.js"></script>

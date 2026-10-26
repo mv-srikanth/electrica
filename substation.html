@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electrica Substation</title>
+  <meta name="description" content="Interactive 3D 110/22 kV zone substation with a live single-line diagram: identify the equipment, follow the power flow, and practise switching with interlocks and fault scenarios.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/substation.css">
+</head>
+<body>
+<div class="sub-app" id="app">
+  <header class="top">
+    <p class="brand">Electr<span>i</span>ca <small>Zone substation</small></p>
+    <p class="credit">Prepared by <b>Dr M. V. Srikanth</b>, EEE, VWU</p>
+    <nav class="sitenav" aria-label="Sections">
+      <a href="index.html">Machines</a>
+      <a href="substation.html" aria-current="page">Substation</a>
+    </nav>
+  </header>
+
+  <main class="sub-main">
+    <section class="viewer sub-viewer" id="viewer" aria-label="3D substation">
+      <div class="stage" id="stage">
+        <div class="labels" id="labels"></div>
+        <div class="tip" id="tip" hidden></div>
+        <div class="status" id="status">Building the substation</div>
+      </div>
+      <div class="bay-head ov">
+        <h1>Zone substation, 110 / 22 kV</h1>
+        <p>‘H’ arrangement · 2 lines · 2 × 60 MVA · indoor 22 kV board</p>
+        <p class="hint">Drag to orbit · Right-drag to pan · Scroll to zoom · Click any equipment</p>
+      </div>
+      <div class="viewtools ov" role="group" aria-label="Camera">
+        <button type="button" class="tool" data-view="overview">Overview</button>
+        <button type="button" class="tool" data-view="plan">Plan</button>
+        <button type="button" class="tool" data-view="elevation">Bay elevation</button>
+        <button type="button" class="tool tour-btn" id="tourBtn" aria-pressed="false">Guided tour</button>
+        <button type="button" class="tool" id="fsBtn" hidden>Full screen</button>
+      </div>
+      <div class="layers ov" role="group" aria-label="Layers">
+        <button type="button" class="tool" data-layer="flow" aria-pressed="true">Power flow</button>
+        <button type="button" class="tool" data-layer="labels" aria-pressed="true">Labels</button>
+        <button type="button" class="tool" data-layer="dims" aria-pressed="false">Dimensions</button>
+        <button type="button" class="tool" data-layer="earth" aria-pressed="false">Earthing</button>
+        <button type="button" class="tool" data-layer="roof" aria-pressed="false">Open roof</button>
+      </div>
+      <div class="supply ov" id="supply" aria-live="polite"></div>
+      <div class="dock tourdock ov" id="tour" hidden>
+        <div class="walk">
+          <button type="button" id="tourPrev">Previous</button>
+          <p id="tourText"></p>
+          <button type="button" id="tourNext">Next</button>
+        </div>
+        <button type="button" class="tour-stop" id="tourStop">End tour</button>
+      </div>
+    </section>
+
+    <section class="sld-panel" aria-labelledby="sldH">
+      <div class="sld-head">
+        <h2 class="eyebrow" id="sldH">Single-line diagram</h2>
+        <p class="sld-msg" id="sldMsg" aria-live="polite">Click a breaker or switch to operate it.</p>
+        <div class="sld-legend" aria-hidden="true">
+          <span><i class="lg l110"></i>110 kV live</span>
+          <span><i class="lg l22"></i>22 kV live</span>
+          <span><i class="lg ldead"></i>Dead</span>
+          <span><i class="lg learth"></i>Earthed</span>
+          <span><i class="sq cbc"></i>Closed</span>
+          <span><i class="sq cbo"></i>Open</span>
+        </div>
+        <button type="button" class="tool" id="sldSize" aria-pressed="false">Enlarge</button>
+      </div>
+      <div class="sld-wrap" id="sldWrap">
+        <svg id="sld" viewBox="0 0 1180 330" role="img" aria-label="Live single-line diagram of the substation"></svg>
+        <div class="pop" id="pop" role="dialog" aria-label="Operate" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="sub-side">
+    <div class="tabs" role="tablist" aria-label="Panels">
+      <button type="button" role="tab" id="t-details" aria-controls="p-details" aria-selected="true">Details</button>
+      <button type="button" role="tab" id="t-ex" aria-controls="p-ex" aria-selected="false" tabindex="-1">Exercises</button>
+      <button type="button" role="tab" id="t-arr" aria-controls="p-arr" aria-selected="false" tabindex="-1">Arrangements</button>
+    </div>
+    <section class="tabpanel" id="p-details" role="tabpanel" aria-labelledby="t-details"></section>
+    <section class="tabpanel" id="p-ex" role="tabpanel" aria-labelledby="t-ex" hidden></section>
+    <section class="tabpanel" id="p-arr" role="tabpanel" aria-labelledby="t-arr" hidden></section>
+  </aside>
+</div>
+
+<!-- 3D library (three.js r128), kept in this folder so the site also works offline -->
+<script src="js/vendor/three.min.js"></script>
+<script src="js/vendor/OrbitControls.js"></script>
+<!-- the substation: text, network logic, single-line diagram, 3D model, page -->
+<script src="js/substation/data.js"></script>
+<script src="js/substation/network.js"></script>
+<script src="js/substation/sld.js"></script>
+<script src="js/substation/scene.js"></script>
+<script src="js/substation/app.js"></script>
+</body>
+</html>

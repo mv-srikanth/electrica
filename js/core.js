@@ -78,7 +78,9 @@ window.Electrica = (function () {
       carbon: [0x2b2c30, 0.1, 0.85], brass: [0xc9a04a, 0.85, 0.28], porcelain: [0xe9e5dd, 0, 0.3],
       mica: [0x5d3c28, 0.1, 0.6], dark: [0x2c353d, 0.4, 0.55],
       R: [0xc23a2c, 0.3, 0.45], Y: [0xd9a21c, 0.3, 0.45], B: [0x2e66b2, 0.3, 0.45],
-      oil: [0xc98f2a, 0, 0.2], glass: [0xcfe2ea, 0.1, 0.05], gel: [0x3d72d4, 0, 0.6],
+      oil: [0xc98f2a, 0, 0.2], glass: [0xcfe2ea, 0.1, 0.05], gel: [0x3d72d4, 0, 0.6], gelPink: [0xe38aa8, 0, 0.6],
+      tank: [0x66737a, 0.25, 0.6], porcelainBr: [0x7b3a1f, 0.05, 0.22], rubber: [0x2a2b2d, 0, 0.9],
+      galv: [0xaeb6bb, 0.85, 0.35], concrete: [0x9a968c, 0, 0.95], white: [0xf2f2ef, 0, 0.6],
     };
     function mat(k) {
       const p = PAL[k] || PAL.steel;
@@ -154,6 +156,13 @@ window.Electrica = (function () {
       g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
       return new THREE.CanvasTexture(c);
     })();
+    const SHADOW = (function () {
+      const c = document.createElement('canvas'); c.width = c.height = 128;
+      const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 4, 64, 64, 64);
+      gr.addColorStop(0, 'rgba(0,0,0,0.55)'); gr.addColorStop(0.55, 'rgba(0,0,0,0.25)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+      return new THREE.CanvasTexture(c);
+    })();
     /* Particles that travel round closed loops. loops: arrays of Vector3; per: particles per loop.
        Returns { obj, mat, update(shift) }: add obj to m.fluxGroup, call update(distance) from m.fluxUpdate. */
     function makeFlux(loops, per, size, color) {
@@ -220,7 +229,44 @@ window.Electrica = (function () {
       (o.rotor ? B.rotor : B.fixed).add(m);
       p.meshes.push(m); return m;
     }
+    /* Many small pieces as one mesh: merge([[geometry, { pos, rot, scale }], ...]). Faster than one mesh each. */
+    function merge(items) {
+      const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3(), sc = new THREE.Vector3();
+      let allUv = true;
+      const gs = items.map((it) => {
+        const g0 = Array.isArray(it) ? it[0] : it, o = (Array.isArray(it) ? it[1] : null) || {};
+        const g = g0.index ? g0.toNonIndexed() : g0.clone();
+        const r = o.rot || [0, 0, 0], t = o.pos || [0, 0, 0], s = o.scale == null ? [1, 1, 1] : (typeof o.scale === 'number' ? [o.scale, o.scale, o.scale] : o.scale);
+        e.set(r[0], r[1], r[2]); q.setFromEuler(e); p.set(t[0], t[1], t[2]); sc.set(s[0], s[1], s[2]);
+        g.applyMatrix4(m4.compose(p, q, sc));
+        if (!g.attributes.normal) g.computeVertexNormals();
+        if (!g.attributes.uv) allUv = false;
+        return g;
+      });
+      let n = 0; gs.forEach((g) => { n += g.attributes.position.count; });
+      const P = new Float32Array(n * 3), N = new Float32Array(n * 3), U = allUv ? new Float32Array(n * 2) : null;
+      let o3 = 0, o2 = 0;
+      gs.forEach((g) => {
+        P.set(g.attributes.position.array, o3); N.set(g.attributes.normal.array, o3); o3 += g.attributes.position.count * 3;
+        if (U) { U.set(g.attributes.uv.array, o2); o2 += g.attributes.uv.count * 2; }
+        g.dispose();
+      });
+      const out = new THREE.BufferGeometry();
+      out.setAttribute('position', new THREE.BufferAttribute(P, 3));
+      out.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+      if (U) out.setAttribute('uv', new THREE.BufferAttribute(U, 2));
+      return out;
+    }
+    /* A box w x h x d with softly rounded edges of radius r. */
+    function rbox(w, h, d, r) {
+      r = Math.max(0.0005, Math.min(r == null ? 0.02 : r, w / 2 - 0.0005, h / 2 - 0.0005, d / 2 - 0.0005));
+      const s = new THREE.Shape(); rrInto(s, Math.max(0.001, w - 2 * r), Math.max(0.001, h - 2 * r), Math.min(r * 0.05, 0.0004));
+      const g = new THREE.ExtrudeGeometry(s, { depth: Math.max(0.0005, d - 2 * r), bevelEnabled: true, bevelThickness: r, bevelSize: r, bevelSegments: 3, curveSegments: 6 });
+      g.translate(0, 0, -(d - 2 * r) / 2); return g;
+    }
+
     const kit = {
+      merge: merge, rbox: rbox,
       THREE: THREE, V: V, TAU: TAU, pol: pol, cyl: cyl, annulus: annulus, ringRR: ringRR, extrude: extrude,
       frameShape: frameShape, polyShape: polyShape, circlePts: circlePts, slotPts: slotPts,
       part: part, add: add, makeFlux: makeFlux, fluxMaterial: fluxMaterial, material: material,
@@ -244,6 +290,11 @@ window.Electrica = (function () {
       const b0 = boxAt(M, M.meshes, 0), b1 = boxAt(M, M.meshes, 1);
       M.floorY = b0.min.y - 0.01;
       M.floorDrop = Math.max(0, M.floorY - (b1.min.y - 0.05));
+      /* a soft contact shadow under the machine */
+      const sz = b0.getSize(V(0, 0, 0)), ctr = b0.getCenter(V(0, 0, 0));
+      const sh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: SHADOW, color: 0x000000, transparent: true, opacity: 0.5, depthWrite: false }));
+      sh.rotation.x = -Math.PI / 2; sh.scale.set(sz.x * 1.25 + 0.6, sz.z * 1.25 + 0.6, 1); sh.position.set(ctr.x, M.floorY + 0.006, ctr.z); sh.renderOrder = -1;
+      M.root.add(sh); M.shadow = sh;
       return M;
     }
 
@@ -265,6 +316,7 @@ window.Electrica = (function () {
     function applySep(s) {
       for (const m of cur.meshes) m.position.copy(m.userData.base).addScaledVector(m.userData.ex, s);
       floor.position.y = cur.floorY - cur.floorDrop * s;
+      if (cur.shadow) { cur.shadow.position.y = floor.position.y + 0.006; cur.shadow.material.opacity = 0.5 * (1 - 0.7 * Math.min(1, s)); }
       state.appliedSep = s;
     }
     function flyTo(target, pos, instant) {
@@ -368,7 +420,7 @@ window.Electrica = (function () {
       else if (m === 'walkthrough') sepT = 0.55;
       setSep(sepT, instant);
       walkEl.hidden = m !== 'walkthrough';
-      scopeEl.hidden = m !== 'flux' || !cur.waves.length;
+      scopeEl.hidden = m !== 'flux' || (!cur.waves.length && !defs[state.mi].fluxNote);
       if (m === 'flux' && cur.speed > 0 && !reduceMotion) setRun(true);
       if (m === 'walkthrough') { selectPart(Math.max(0, state.sel), true); }
       else { refreshLook(); frameView(sepT, instant); }
@@ -406,6 +458,35 @@ window.Electrica = (function () {
       statusEl.hidden = false;
       statusEl.textContent = 'Could not build ' + (D.name || D.id) + ': ' + (err && err.message ? err.message : err) + '. Check js/machines/' + D.id + '.js and the browser console.';
     }
+    /* Optional sliders with a live calculation and an equivalent-circuit drawing (see README). */
+    const calcEl = $('#calc');
+    function renderCalc(D) {
+      if (!D.params || !D.calc) { calcEl.hidden = true; calcEl.innerHTML = ''; return; }
+      D.values = D.values || {};
+      D.params.forEach((p) => { if (D.values[p.id] == null) D.values[p.id] = p.value; });
+      calcEl.hidden = false;
+      calcEl.innerHTML = '<h2 class="eyebrow">' + esc(D.calcTitle || 'Try it') + '</h2><div class="params">' +
+        D.params.map((p) => '<label class="param" for="p-' + p.id + '"><span>' + esc(p.label) + '</span><output for="p-' + p.id + '"></output>' +
+          '<input type="range" id="p-' + p.id + '" min="' + p.min + '" max="' + p.max + '" step="' + p.step + '" value="' + D.values[p.id] + '"></label>').join('') + '</div>' +
+        (D.diagram ? '<div class="diagram">' + D.diagram + '</div>' : '') + '<dl class="calc-out"></dl><p class="calc-note"></p>';
+      calcEl.querySelectorAll('input').forEach((inp) => inp.addEventListener('input', () => { D.values[inp.id.slice(2)] = +inp.value; updateCalc(D); }));
+      updateCalc(D);
+    }
+    function updateCalc(D) {
+      D.params.forEach((p) => {
+        const o = calcEl.querySelector('output[for="p-' + p.id + '"]');
+        if (o) o.textContent = (p.format ? p.format(D.values[p.id]) : D.values[p.id]) + (p.unit ? ' ' + p.unit : '');
+      });
+      let res = {};
+      try { res = D.calc(D.values) || {}; } catch (err) { console.error('Electrica: calc failed for "' + D.id + '"', err); }
+      calcEl.querySelector('.calc-out').innerHTML = (res.rows || []).map((r) => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('');
+      calcEl.querySelector('.calc-note').textContent = res.note || '';
+      if (D.B && D.B.onParams) {
+        try { D.B.onParams(D.values, res); } catch (err) { console.error('Electrica: onParams failed for "' + D.id + '"', err); }
+        state.appliedSep = -1;
+      }
+    }
+
     function showMachine(i) {
       if (i === state.mi) return true;
       const D = defs[i];
@@ -424,10 +505,12 @@ window.Electrica = (function () {
       $('#count').textContent = cur.parts.length + ' parts · ' + cur.meshes.length + ' pieces';
       partsEl.innerHTML = cur.parts.map((p, k) => '<li><button type="button" data-i="' + k + '" aria-pressed="false"><span class="num">' + pad(k + 1) + '</span><span>' + esc(p.name) + '</span></button></li>').join('');
       markersEl.innerHTML = cur.parts.map((p, k) => '<button type="button" class="marker" data-i="' + k + '" aria-pressed="false" aria-label="' + esc(p.name) + '">' + pad(k + 1) + '</button>').join('');
-      $('#plate').innerHTML = '<h2>' + esc(D.short || D.name) + '</h2><dl>' + (D.plate || []).map((r) => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl><p class="ex">Example rating for teaching</p>';
+      $('#plate').innerHTML = '<h2>' + esc(D.short || D.name) + '</h2><dl>' + (D.plate || []).map((r) => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl><p class="ex">' + esc(D.plateNote || 'Example rating for teaching') + '</p>';
       $('#principle').innerHTML = '<h2 class="eyebrow">Working principle</h2><p>' + esc(D.principle) + '</p><div class="formulas">' + (D.formulas || []).map((f) => '<div class="formula">' + esc(f) + '</div>').join('') + '</div>';
       legendEl.innerHTML = cur.waves.map((w) => '<span><i style="background:var(' + w.c + ')"></i>' + esc(w.label) + '</span>').join('');
       $('#scopeNote').textContent = D.fluxNote || '';
+      scopeC.hidden = !cur.waves.length; legendEl.hidden = !cur.waves.length;
+      renderCalc(D);
       renderDetail();
       setRun(false);
       camera.position.copy(cur.camDir); controls.target.set(0, 0, 0);

@@ -1,13 +1,20 @@
 # Electrica Machine Atlas
 
+Prepared by Dr M. V. Srikanth, EEE, VWU.
+
 An interactive 3D explorer of electrical machines for teaching. Students can take each
 machine apart, slice it open, step through its parts and watch the magnetic flux move.
+A second page, `substation.html`, is a working 110 / 22 kV zone substation (see below).
 
 Machines included:
 
+- Series magnetic circuit with an adjustable air gap (live reluctance and flux calculation)
+- Parallel magnetic circuit on a shell-type core (live calculation)
 - Single-phase transformer (core type)
-- Three-phase oil-immersed distribution transformer (11 kV / 433 V, ONAN) with tank, oil,
-  conservator, breather, Buchholz relay, radiators, bushings, tap switch and the other fittings
+- Three-phase oil-immersed distribution transformer, 1 MVA, 11 / 0.433 kV, Dyn11, ONAN, built to an
+  Indian tender datasheet (IS 1180 Part 1, IS 2026): cable boxes with disconnecting chambers, detachable
+  radiators, conservator with air cell, MOG, breather, double-float Buchholz relay, PRV, explosion vent,
+  OTI and WTI in a marshalling box, neutral bushing with CT, rollers, plates and foundation
 - DC shunt motor (two-pole)
 - Three-phase squirrel-cage induction motor (two-pole, TEFC)
 - Three-phase salient-pole alternator (four-pole)
@@ -17,17 +24,27 @@ The site is plain HTML, CSS and JavaScript. There is no build step and nothing t
 ## What is in this folder
 
 ```
-index.html                  the page; lists the machine files in the order they appear
+index.html                  the machines page; lists the machine files in the order they appear
+substation.html             the substation page
 favicon.svg                 browser-tab icon
 css/style.css               colours, fonts and layout (light and dark themes)
+css/substation.css          extra layout for the substation page
 js/core.js                  the 3D viewer, view modes and page logic (normally left alone)
 js/machines/                one file per machine
+    magnetic-circuit-series.js
+    magnetic-circuit-parallel.js
     transformer.js
     distribution-transformer.js
     dc-motor.js
     induction-motor.js
     alternator.js
     _template.js            a working example to copy when you add a machine
+js/substation/              the substation page
+    data.js                 all the text: equipment details, guided tour, exercises, arrangements
+    network.js              the electrical network: live / dead / earthed, interlocks, protection, power flow
+    sld.js                  the live single-line diagram
+    scene.js                the 3D model of the yard and building
+    app.js                  the page that ties them together
 js/vendor/                  three.js r128 (3D library, MIT licence), kept here so it works offline
 README.md                   this file
 ```
@@ -107,10 +124,13 @@ Inside `build: function (k, m) { ... }`, `k` holds the helpers and `m` is the ma
 | `makeFlux(loops, perLoop, size, colour)` | particles round closed loops of points; colour defaults to `flux` (use `copper` for oil flow) |
 | `fluxMaterial(opacity, colour)` | a see-through material in the flux colour, for arrows |
 | `material(name, extra)` | a named material with extra settings, such as a canvas texture for a rating plate |
+| `merge([[geometry, { pos, rot, scale }], ...])` | many small pieces (bolts, fins, discs) as one geometry; much faster than one mesh each |
+| `rbox(w, h, d, r)` | a box with softly rounded edges, for tanks, boxes and covers |
 | `THREE`, `V(x, y, z)`, `pol(r, angle, z)`, `TAU` | three.js itself and small shortcuts |
 
-Materials: `lamA lamB steel copper copperDk board paint shaft alu carbon brass porcelain mica dark R Y B oil glass gel`
-(`R`, `Y`, `B` are the phase colours; `oil` and `glass` look best with `opacity`).
+Materials: `lamA lamB steel copper copperDk board paint shaft alu carbon brass porcelain mica dark R Y B oil glass gel gelPink tank porcelainBr rubber galv concrete white`
+(`R`, `Y`, `B` are the phase colours; `oil` and `glass` look best with `opacity`; `tank` is paint shade 632 of IS 5;
+`porcelainBr` is brown-glazed porcelain; `galv` is galvanised steel).
 
 Settings on `m`:
 
@@ -122,6 +142,52 @@ Settings on `m`:
 | `m.cutNormals` | which quarter Cutaway removes; `[[-1,0,0],[0,-1,0]]` removes x > 0 and y > 0 |
 | `m.camDir` | the direction the camera starts from, such as `[7, 4, 7.5]` |
 | `m.fluxGroup`, `m.rotor` | groups you can add extra objects to; add `m.fluxGroup` to `m.rotor` if the field turns with the rotor |
+
+### Sliders and a live calculation (optional)
+
+A machine can add sliders, a calculation that updates as they move, and a small
+equivalent-circuit drawing. The two magnetic-circuit files show how. In the object
+passed to `Electrica.register`:
+
+| Field | Meaning |
+| --- | --- |
+| `params` | the sliders: `[{ id, label, min, max, step, value, unit, format }]` |
+| `calc: function (values) { ... }` | returns `{ rows: [[label, text], ...], note: '...' }`; any other fields are passed on to `m.onParams` |
+| `diagram` | an SVG drawing shown with the sliders (use `currentColor` and `var(--flux)` so it works in dark mode) |
+| `calcTitle`, `plateNote` | the panel heading, and the line under the rating plate |
+
+Inside `build`, set `m.onParams = (values, result) => { ... }` to change the model when a
+slider moves (for example the gap width). If you move a piece, update `piece.userData.base`
+as well, because that is the position the exploded view starts from.
+
+## The substation page
+
+`substation.html` is a 110 / 22 kV zone substation in the ‘H’ arrangement, based on the
+TasNetworks “Substation General Equipment Detail and Layout Standard” (R1089602, July 2018):
+the equipment list in its section 2, the ‘H’ arrangement PCOLD in Appendix D and the 22 kV
+single bus in Appendix F. Device numbers follow the PCOLD (A152 line breaker, A129 line
+disconnector, A131 earth switch, A752 bus section, A429A transformer disconnector, A552 22 kV
+incomer, A252 feeder and so on).
+
+What students can do:
+
+- Orbit the yard and building in 3D, click any equipment for its role, what to look for, the
+  standard's reference and typical ratings. Views: Overview, Plan, Bay elevation.
+- Layers: Power flow (live conductors coloured, moving dots show direction), Labels,
+  Dimensions (heights and clearances), Earthing (the buried grid) and Open roof.
+- Operate any breaker, disconnector or earth switch on the single-line diagram or in 3D. The
+  interlocks block unsafe moves and say why; a breaker closed onto a fault trips again.
+- Take the guided tour (16 stops following the power from the lines to the feeders).
+- Work through five exercises: line fault, bus fault, transformer trip, cable fault, and a
+  planned transformer outage with no customer interruption. Each has a live checklist,
+  hints, a model answer, Undo and a switching log.
+- Compare the six arrangements of section 3 (breaker and a half, double bus, GIS, ‘H’,
+  radial, single bus).
+
+To change the words (equipment details, tour stops, exercises), edit `js/substation/data.js`.
+An exercise is a list entry with the fault location, the breakers that trip, hints, the
+model answer and the goals. The layout, dimensions and ratings marked “typical” are for
+teaching; a real design follows the clearance rules of AS 2067 / IEC 61936-1.
 
 ## Ideas for next machines
 

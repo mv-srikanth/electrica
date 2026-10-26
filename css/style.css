@@ -33,7 +33,7 @@
 [hidden] { display: none !important; }
 body {
   background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; margin: 0;
-  padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 10px;
 }
 button { font: inherit; color: inherit; }
@@ -51,6 +51,17 @@ p { margin: 0; }
 .brand span { color: var(--copper); }
 .brand small { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .12em; color: var(--muted); margin-left: 10px; white-space: nowrap; }
 .note { font-size: 12.5px; color: var(--muted); }
+/* header navigation between the Machines and Substation pages */
+.sitenav { display: flex; gap: 4px; align-items: center; }
+.sitenav a { font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 5px 10px; border: 1px solid transparent; border-radius: 6px; }
+.sitenav a:hover { color: var(--ink); border-color: var(--line); }
+.sitenav a[aria-current="page"] { color: var(--ink); border-color: var(--ink); background: var(--raise); }
+.sitenav a:focus-visible { outline: 2px solid var(--flux); outline-offset: 2px; }
+.top .sitenav { margin-left: auto; }
+.credit { font-size: 12.5px; color: var(--muted); }
+.credit b { font-weight: 600; color: var(--ink); }
+.top .credit { margin-left: auto; }
+.top .credit + .sitenav { margin-left: 0; }
 .mach { grid-area: mach; min-width: 0; }
 .bay { grid-area: bay; min-width: 0; }
 .partsSec { grid-area: parts; min-width: 0; }
@@ -142,6 +153,18 @@ p { margin: 0; }
 .detail dt { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .detail dd { margin: 2px 0 0; font-size: 14.5px; }
 .muted { color: var(--muted); }
+.calc { display: grid; gap: 10px; }
+.params { display: grid; gap: 8px; }
+.param { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; align-items: baseline; font-size: 13.5px; }
+.param input { grid-column: 1 / -1; width: 100%; accent-color: var(--copper); }
+.param output { font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.diagram { border: 1px solid var(--line); border-radius: 6px; background: var(--raise); padding: 6px 4px; color: var(--ink); }
+.diagram svg { display: block; width: 100%; height: auto; }
+.diagram text { font-family: var(--mono); font-size: 11px; fill: currentColor; }
+.calc-out { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; margin: 0; font-size: 13.5px; }
+.calc-out dt { color: var(--muted); }
+.calc-out dd { margin: 0; font-family: var(--mono); font-size: 12.5px; text-align: right; font-variant-numeric: tabular-nums; }
+.calc-note { font-size: 12.5px; line-height: 1.45; color: var(--muted); }
 
 /* ---------- tablets and up: overlays sit on the viewer ---------- */
 @media (min-width: 760px) {
