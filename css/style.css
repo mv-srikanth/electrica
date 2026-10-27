@@ -51,11 +51,12 @@ p { margin: 0; }
 .brand span { color: var(--copper); }
 .brand small { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .12em; color: var(--muted); margin-left: 10px; white-space: nowrap; }
 .note { font-size: 12.5px; color: var(--muted); }
+.top .note { flex: 1 1 240px; min-width: 0; }
 /* header navigation between the Machines and Substation pages */
-.sitenav { display: flex; gap: 4px; align-items: center; }
-.sitenav a { font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 5px 10px; border: 1px solid transparent; border-radius: 6px; }
-.sitenav a:hover { color: var(--ink); border-color: var(--line); }
-.sitenav a[aria-current="page"] { color: var(--ink); border-color: var(--ink); background: var(--raise); }
+.sitenav { display: flex; gap: 2px; align-items: center; flex-wrap: wrap; padding: 3px; background: color-mix(in srgb, var(--line) 60%, var(--panel)); border-radius: 999px; }
+.sitenav a { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 999px; }
+.sitenav a:hover { color: var(--ink); }
+.sitenav a[aria-current="page"] { color: var(--ink); background: var(--raise); box-shadow: 0 1px 2px rgba(0, 0, 0, .12); font-weight: 600; }
 .sitenav a:focus-visible { outline: 2px solid var(--flux); outline-offset: 2px; }
 .top .sitenav { margin-left: auto; }
 .credit { font-size: 12.5px; color: var(--muted); }
