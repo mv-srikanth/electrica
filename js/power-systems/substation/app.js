@@ -168,7 +168,7 @@
   };
   function view(name, dur) {
     const v = VIEWS[name]();
-    const asp = camera.aspect || 1.6, k = asp < 1.1 ? 1.55 : asp < 1.5 ? 1.18 : 1;
+    const asp = camera.aspect || 1.6, k = asp < 0.8 ? 2.6 : asp < 1.1 ? 1.55 : asp < 1.5 ? 1.18 : 1;
     const dir = v[0].clone().sub(v[1]).multiplyScalar(k);
     flyTo(v[1].clone().add(dir), v[1], dur);
   }
@@ -311,10 +311,11 @@
   });
 
   /* ---------- supply status chips ---------- */
-  const supplyEl = $('#supply');
+  const supplyEl = $('#supply'), readEl = $('#cRead');
   function chip(state, label, value) { return '<span class="chip s-' + state + '"><i></i>' + esc(label) + (value ? ' <b>' + esc(value) + '</b>' : '') + '</span>'; }
   function renderSupply() {
     const h = [];
+    let load = 0;
     ['A', 'B'].forEach((L) => {
       const n = 'L' + L, s = net.fault.indexOf(n) >= 0 && !net.st['rem' + L] ? 'fault' : net.nodeState(n);
       h.push(chip(s, 'Line ' + L, s === 'l110' ? net.lineMW[L].toFixed(1) + ' MW' : s === 'fault' ? 'fault' : s === 'earthed' ? 'earthed' : 'dead'));
@@ -322,6 +323,7 @@
     ['1', '2'].forEach((T) => {
       const live = net.isLive('T' + T + 'H'), mw = net.txMW('T' + T);
       const faulted = net.fault.indexOf('T' + T + 'H') >= 0;
+      if (live) load += mw;
       h.push(chip(faulted ? 'fault' : live ? 'l110' : 'dead', 'T' + T, live ? mw.toFixed(1) + ' MW · ' + Math.round(mw / 0.95 / 60 * 100) + '%' : faulted ? 'tripped' : 'off'));
     });
     const on = net.customersOn(), all = net.CUST.length;
@@ -329,6 +331,8 @@
     const st = (net.supplied.D252 ? 1 : 0) + (net.supplied.E252 ? 1 : 0);
     h.push(chip(st ? 'l22' : 'dead', 'Station supply', st === 2 ? 'ST1 + ST2' : st ? (net.supplied.D252 ? 'ST1 only' : 'ST2 only') : 'on batteries'));
     supplyEl.innerHTML = h.join('');
+    /* the card's live readout: who is supplied and the load through the transformers */
+    if (readEl) readEl.textContent = on + ' / ' + all + ' customers supplied · ' + load.toFixed(1) + ' MW';
   }
 
   /* ---------- details panel ---------- */
@@ -476,7 +480,8 @@
   }
 
   /* ---------- theme ---------- */
-  function applyTheme() { bg.set(tok('--stage') || '#d6dde2'); scene.fog.color.copy(bg); dimMat.color.set(tok('--ink') || '#121c25'); }
+  /* the field around the site takes a calm, muted tone from the page (--ground), so the live colours stand out */
+  function applyTheme() { bg.set(tok('--stage') || '#d6dde2'); scene.fog.color.copy(bg); dimMat.color.set(tok('--ink') || '#121c25'); if (S.ground) S.ground.color.set(tok('--ground') || '#7f8c69'); }
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
   new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   applyTheme();

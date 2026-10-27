@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Electrica Hydro Plant</title>
+  <meta name="description" content="A hydro power plant in 3D: follow the water from the reservoir through the tunnel, surge tank and penstock to three Francis turbines, operate the gates and see the head, flow and power.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script>try { var t = localStorage.getItem('electrica-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/hydro.css">
+</head>
+<body>
+<div class="app hydro" id="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#121C25"/><circle cx="12" cy="16" r="7" fill="none" stroke="#E38A50" stroke-width="2.4"/><circle cx="20" cy="16" r="7" fill="none" stroke="#5DB1FF" stroke-width="2.4"/></svg>
+      <div class="brand-t">
+        <p class="word">Electr<span>i</span>ca</p>
+        <p class="credit">Prepared by <b>Dr M. V. Srikanth</b>, EEE, VWU</p>
+      </div>
+    </div>
+    <div class="section">
+      <p class="sec-t">Power systems · Hydro power plant</p>
+      <p class="sec-s">Follow the water from the reservoir to the grid. Animations are slowed down.</p>
+    </div>
+    <nav class="sitenav" aria-label="Sections">
+      <a href="index.html"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2.2"/><path d="M8 2v3.8M8 10.2V14M2 8h3.8M10.2 8H14"/></svg>Machines</a>
+      <a href="substation.html" aria-current="page"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 4.5 14.5M8 1.5l3.5 13M3.5 5h9M5.2 9h5.6M5.9 9l4.6 5.5M10.1 9l-4.6 5.5"/></svg>Power systems</a>
+      <a href="digital.html"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 11.5h3v-7h3.5v7h3.5v-7h3"/></svg>Digital</a>
+    </nav>
+    <button type="button" class="theme-btn" id="themeBtn" data-mode="auto" aria-label="Colour theme">
+      <svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path class="fillc" d="M12 3.5a8.5 8.5 0 0 1 0 17z"/></svg>
+      <svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+      <svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+    </button>
+  </header>
+
+  <div class="rail">
+    <section class="partsSec" aria-labelledby="partsH">
+      <h2 class="eyebrow" id="partsH">Components <span id="count"></span></h2>
+      <ol class="parts" id="parts"></ol>
+    </section>
+  </div>
+
+  <main class="bay">
+    <div class="viewer" id="viewer">
+      <div class="vhead">
+        <div class="bay-head">
+          <nav class="models" aria-label="Power systems models">
+            <a href="substation.html">Zone substation</a>
+            <a href="hydro.html" aria-current="page">Hydro power plant</a>
+          </nav>
+          <h1>Hydro power plant, 3 × 40 MW</h1>
+          <p>Gravity dam · headrace tunnel · surge tank · Francis turbines</p>
+        </div>
+        <div class="viewtools">
+          <button type="button" class="tool" id="focusBtn" aria-pressed="false">Focus view</button>
+          <button type="button" class="tool" id="fsBtn" hidden>Full screen</button>
+        </div>
+      </div>
+      <!-- the figure card: Fig number, title, hint and live readout sit in its corners -->
+      <div class="stage" id="stage">
+        <div class="labels" id="labels"></div>
+        <div class="tip" id="tip" hidden></div>
+        <div class="status" id="status">Building the plant</div>
+        <p class="corner c-fig">Fig 2</p>
+        <p class="corner c-title">Hydro power plant</p>
+        <p class="corner c-hint" title="Drag to orbit · Right-drag to pan · Scroll to zoom · Click a part">Drag to orbit · Click a part</p>
+        <p class="corner c-read" id="cRead"></p>
+      </div>
+      <div class="dock">
+        <div class="walk" id="walk" hidden>
+          <button type="button" id="prev">Previous</button>
+          <p id="walkText"></p>
+          <button type="button" id="next">Next</button>
+        </div>
+        <div class="controls">
+          <div class="seg" role="group" aria-label="View">
+            <button type="button" data-mode="overview" aria-pressed="true">Overview</button>
+            <button type="button" data-mode="powerhouse" aria-pressed="false">Powerhouse</button>
+            <button type="button" data-mode="walkthrough" aria-pressed="false">Walkthrough</button>
+          </div>
+          <button type="button" class="run" id="run" aria-pressed="true">Pause</button>
+          <button type="button" class="tool" id="labelsBtn" aria-pressed="true">Labels</button>
+        </div>
+        <div class="supply" id="chips" aria-live="off"></div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="info" id="info">
+    <section class="detail empty" id="detail" aria-live="polite"></section>
+    <section class="calc" id="ops"></section>
+    <section class="plate" id="plate" aria-label="Rating plate"></section>
+    <section class="principle" id="principle"></section>
+  </aside>
+</div>
+
+<!-- Header theme switch (light, dark or follow the computer) -->
+<script src="js/site.js"></script>
+
+<!-- 3D library (three.js r128), kept in this folder so the site also works offline -->
+<script src="js/vendor/three.min.js"></script>
+<script src="js/vendor/OrbitControls.js"></script>
+<!-- the hydro plant: words, plant model, 3D model, page -->
+<script src="js/power-systems/hydro/data.js"></script>
+<script src="js/power-systems/hydro/model.js"></script>
+<script src="js/power-systems/hydro/scene.js"></script>
+<script src="js/power-systems/hydro/app.js"></script>
+</body>
+</html>

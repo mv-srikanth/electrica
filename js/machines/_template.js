@@ -101,6 +101,6 @@ Electrica.register({
 
     m.speed = 0;                             // rad/s for pieces added with rotor: true. 0 = no moving parts
     m.cutNormals = [[-1, 0, 0], [0, -1, 0]]; // Cutaway removes the quarter where x > 0 and y > 0
-    m.camDir = [6, 3.5, 7];                  // direction the camera starts from
+    m.camDir = [6, 3.5, 7];                  // side the camera starts from (the view is raised to the isometric 30 degrees)
   },
 });

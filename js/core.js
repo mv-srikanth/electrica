@@ -49,23 +49,32 @@ window.Electrica = (function () {
     readColors();
 
     /* ---------- renderer, camera, lights ---------- */
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    /* The canvas is see-through: the soft studio backdrop behind it is drawn by the page (.stage in style.css). */
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setClearColor(0x000000, 0);
     renderer.localClippingEnabled = true;
     renderer.domElement.className = 'gl';
     stageEl.insertBefore(renderer.domElement, stageEl.firstChild);
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(COL['--stage']);
-    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 300);
+    /* An isometric (orthographic) camera, as in the Anatomy figures: parallel edges stay parallel and
+       nothing shrinks with distance. The frustum is 2 units tall; zoom sets how much of the machine fills it.
+       Each machine starts from its own camDir side, raised to the isometric 30 degrees. */
+    const CAM_DIST = 60, ISO_ELEV = THREE.MathUtils.degToRad(30), FILL = 1.02;
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 400);
+    let aspect = 1, stageH = 1;
+    const isoDir = (v) => { const az = Math.atan2(v.x, v.z); return V(Math.sin(az) * Math.cos(ISO_ELEV), Math.sin(ISO_ELEV), Math.cos(az) * Math.cos(ISO_ELEV)); };
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; controls.dampingFactor = 0.09; controls.minDistance = 2.5; controls.maxDistance = 60; controls.rotateSpeed = 0.8;
+    controls.enableDamping = true; controls.dampingFactor = 0.09; controls.minZoom = 0.05; controls.maxZoom = 3; controls.rotateSpeed = 0.8;
     scene.add(new THREE.HemisphereLight(0xf4f7fa, 0x36414b, 0.85));
     const keyL = new THREE.DirectionalLight(0xffffff, 0.95); keyL.position.set(6, 10, 8); scene.add(keyL);
     const rimL = new THREE.DirectionalLight(0xc9dcff, 0.45); rimL.position.set(-8, 4, -6); scene.add(rimL);
     const lowL = new THREE.DirectionalLight(0xffe6d2, 0.22); lowL.position.set(2, -6, 5); scene.add(lowL);
+    /* The bench level. As in the Anatomy figures the machine stands on the card itself with a soft halo
+       under it (the contact shadow made in build), so the floor only marks the level and is not drawn. */
     const floorMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(COL['--bench']) });
     const floor = new THREE.Mesh(new THREE.CircleGeometry(9, 72), floorMat);
-    floor.rotation.x = -Math.PI / 2; scene.add(floor);
+    floor.rotation.x = -Math.PI / 2; floor.visible = false; scene.add(floor);
 
     const clipA = new THREE.Plane(V(-1, 0, 0), 99);
     const clipB = new THREE.Plane(V(0, -1, 0), 99);
@@ -176,7 +185,7 @@ window.Electrica = (function () {
       geo.setAttribute('position', new THREE.BufferAttribute(arr, 3));
       const tk = '--' + (color || 'flux');
       const m = new THREE.PointsMaterial({ size: size || 0.24, map: DOT, transparent: true, depthTest: false, depthWrite: false, color: new THREE.Color(COL[tk] || COL['--flux']), opacity: 0.95 });
-      m.userData.tok = tk; fluxMats.push(m);
+      m.userData.tok = tk; m.userData.size = m.size; fluxMats.push(m);
       const obj = new THREE.Points(geo, m); obj.renderOrder = 20; obj.frustumCulled = false;
       function update(shift) {
         let k = 0;
@@ -319,24 +328,23 @@ window.Electrica = (function () {
       if (cur.shadow) { cur.shadow.position.y = floor.position.y + 0.006; cur.shadow.material.opacity = 0.5 * (1 - 0.7 * Math.min(1, s)); }
       state.appliedSep = s;
     }
-    function flyTo(target, pos, instant) {
-      if (instant || reduceMotion) { fly = null; controls.target.copy(target); camera.position.copy(pos); controls.update(); return; }
-      fly = { t0: performance.now(), dur: 900, fT: controls.target.clone(), tT: target.clone(), fP: camera.position.clone(), tP: pos.clone() };
+    function setZoom(z) { camera.zoom = z; camera.updateProjectionMatrix(); }
+    function flyTo(target, pos, zoom, instant) {
+      if (instant || reduceMotion) { fly = null; controls.target.copy(target); camera.position.copy(pos); setZoom(zoom); controls.update(); return; }
+      fly = { t0: performance.now(), dur: 900, fT: controls.target.clone(), tT: target.clone(), fP: camera.position.clone(), tP: pos.clone(), fZ: camera.zoom, tZ: zoom };
     }
+    /* Frame the whole machine so it fills about 60 per cent of the card. */
     function frameView(sep, instant, dir) {
       const box = boxAt(cur, cur.meshes, sep), c = box.getCenter(V(0, 0, 0)), r = box.getSize(V(0, 0, 0)).length() / 2;
-      const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect), f = Math.min(vf, hf);
-      const dist = Math.min(55, (r / Math.sin(f / 2)) * (camera.aspect < 0.8 ? 0.92 : 0.86));
       const d = (dir || camera.position.clone().sub(controls.target)).clone().normalize();
-      c.y -= r * 0.08;   /* sit the machine a little high, clear of the controls along the bottom */
-      flyTo(c, c.clone().addScaledVector(d, dist), instant);
+      flyTo(c, c.clone().addScaledVector(d, CAM_DIST), (FILL * Math.min(1, aspect)) / r, instant);
     }
     function focusPart(i) {
       const p = cur.parts[i]; if (!p) return;
       const box = boxAt(cur, p.meshes, state.sepTarget), c = box.getCenter(V(0, 0, 0)), size = box.getSize(V(0, 0, 0)).length();
-      const dist = Math.max(3.6, Math.min(15, size * 1.9 + 2.2));
+      const half = Math.max(1.05, Math.min(4.4, (size * 1.9 + 2.2) * 0.29));
       const d = camera.position.clone().sub(controls.target).normalize();
-      flyTo(c, c.clone().addScaledVector(d, dist));
+      flyTo(c, c.clone().addScaledVector(d, CAM_DIST), Math.min(1, aspect) / half);
     }
     controls.addEventListener('start', () => { fly = null; });
 
@@ -364,12 +372,24 @@ window.Electrica = (function () {
     const sepEl = $('#sep'), sepOut = $('#sepOut'), runBtn = $('#run'), walkEl = $('#walk'), walkText = $('#walkText');
     const scopeEl = $('#scope'), scopeC = $('#scopeC'), legendEl = $('#legend');
     const modeBtns = Array.from(document.querySelectorAll('.seg button'));
+    const cFig = $('#cFig'), cTitle = $('#cTitle'), cRead = $('#cRead');
+
+    /* The live readout in the card's bottom-right corner: what the figure is showing right now. */
+    const MODE_WORD = { assembled: 'Assembled', cutaway: 'Cutaway', exploded: 'Exploded', walkthrough: 'Walkthrough', flux: 'Flux' };
+    function readout() {
+      if (!cur || !cRead) return;
+      let s = state.sel >= 0 ? 'Part ' + pad(state.sel + 1) + ' / ' + pad(cur.parts.length) + ' · ' + cur.parts[state.sel].name
+        : (MODE_WORD[state.mode] || '') + (state.sepTarget > 0.005 ? ' · ' + Math.round(state.sepTarget * 100) + '% apart' : ' · ' + cur.parts.length + ' parts');
+      if (state.run) s += ' · running';
+      cRead.textContent = s;
+    }
 
     machinesEl.innerHTML = defs.map((m, i) => '<button type="button" class="mbtn" data-i="' + i + '" aria-current="false"><svg viewBox="0 0 44 44" aria-hidden="true">' + (m.icon || '<circle cx="22" cy="22" r="16"/>') + '</svg><span class="mtxt"><b>' + esc(m.short || m.name) + '</b><span>' + esc(m.kind) + '</span></span></button>').join('');
     machinesEl.addEventListener('click', (e) => { const b = e.target.closest('.mbtn'); if (b) showMachine(+b.dataset.i); });
 
     function renderDetail() {
       const D = defs[state.mi];
+      detailEl.classList.toggle('empty', state.sel < 0);
       if (state.sel < 0) {
         detailEl.innerHTML = '<h2 class="eyebrow">Component</h2><p class="muted">Pick a component in the list, or click it in the viewer, to see what it does and what it is made of.</p>';
         return;
@@ -385,8 +405,11 @@ window.Electrica = (function () {
       partsEl.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.i === i)));
       markersEl.querySelectorAll('.marker').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.i === i)));
       if (state.mode === 'walkthrough' && i >= 0) { state.step = i; walkText.innerHTML = '<b>Step ' + pad(i + 1) + ' of ' + pad(cur.parts.length) + '</b>' + esc(cur.parts[i].name); }
-      renderDetail(); refreshLook();
+      renderDetail(); refreshLook(); readout();
       if (flyThere && i >= 0) focusPart(i);
+      /* on a wide screen the information column scrolls by itself: bring the component card (at its top) into view */
+      const infoEl = detailEl.parentElement;
+      if (i >= 0 && infoEl.scrollTop > 0 && getComputedStyle(infoEl).overflowY === 'auto') infoEl.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
     }
     partsEl.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) selectPart(+b.dataset.i, true); });
     markersEl.addEventListener('click', (e) => { const b = e.target.closest('.marker'); if (b) selectPart(+b.dataset.i, state.mode === 'walkthrough'); });
@@ -394,6 +417,7 @@ window.Electrica = (function () {
     function setSep(v, instant) {
       state.sepTarget = v; sepEl.value = String(Math.round(v * 100)); sepOut.textContent = Math.round(v * 100) + '%';
       if (instant) state.sep = v;
+      readout();
     }
     sepEl.addEventListener('input', () => {
       setSep(+sepEl.value / 100);
@@ -406,13 +430,15 @@ window.Electrica = (function () {
       runBtn.setAttribute('aria-pressed', String(state.run));
       runBtn.disabled = cur.speed === 0;
       runBtn.textContent = cur.speed === 0 ? 'No moving parts' : state.run ? 'Pause' : 'Run';
+      readout();
     }
     runBtn.addEventListener('click', () => { if (cur) setRun(!state.run); });
 
-    function markModes() { modeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode))); }
+    function markModes() { modeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode))); readout(); }
     function setMode(m, instant) {
       if (!cur) return;
       state.mode = m; markModes();
+      viewerEl.dataset.mode = m;
       state.cutTarget = m === 'cutaway' ? 1 : 0;
       let sepT = state.sepTarget;
       if (m === 'assembled' || m === 'flux') sepT = 0;
@@ -502,6 +528,7 @@ window.Electrica = (function () {
       applySep(0);
       machinesEl.querySelectorAll('.mbtn').forEach((b) => b.setAttribute('aria-current', String(+b.dataset.i === i)));
       $('#mName').textContent = D.name || D.short; $('#mSub').textContent = D.sub || '';
+      cFig.textContent = 'Fig ' + (i + 1); cTitle.textContent = D.short || D.name;
       $('#count').textContent = cur.parts.length + ' parts · ' + cur.meshes.length + ' pieces';
       partsEl.innerHTML = cur.parts.map((p, k) => '<li><button type="button" data-i="' + k + '" aria-pressed="false"><span class="num">' + pad(k + 1) + '</span><span>' + esc(p.name) + '</span></button></li>').join('');
       markersEl.innerHTML = cur.parts.map((p, k) => '<button type="button" class="marker" data-i="' + k + '" aria-pressed="false" aria-label="' + esc(p.name) + '">' + pad(k + 1) + '</button>').join('');
@@ -513,7 +540,7 @@ window.Electrica = (function () {
       renderCalc(D);
       renderDetail();
       setRun(false);
-      camera.position.copy(cur.camDir); controls.target.set(0, 0, 0);
+      camera.position.copy(isoDir(cur.camDir)).multiplyScalar(CAM_DIST); controls.target.set(0, 0, 0);
       setMode('assembled', true);
       try { history.replaceState(null, '', '#' + D.id); } catch (e) { /* the address is only a convenience */ }
       return true;
@@ -596,7 +623,6 @@ window.Electrica = (function () {
     /* ---------- theme ---------- */
     function applyTheme() {
       readColors();
-      scene.background = new THREE.Color(COL['--stage']);
       floorMat.color.set(COL['--bench']);
       fluxMats.forEach((m) => m.color.set(COL[m.userData.tok || '--flux'] || COL['--flux']));
       refreshLook();
@@ -607,7 +633,8 @@ window.Electrica = (function () {
     /* ---------- sizing and the animation loop ---------- */
     function resize() {
       const w = stageEl.clientWidth, h = stageEl.clientHeight; if (!w || !h) return;
-      renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false); aspect = w / h; stageH = h;
+      camera.left = -aspect; camera.right = aspect; camera.top = 1; camera.bottom = -1; camera.updateProjectionMatrix();
     }
     new ResizeObserver(resize).observe(stageEl);
     resize();
@@ -633,9 +660,12 @@ window.Electrica = (function () {
       if (fly) {
         const u = Math.min(1, (now - fly.t0) / fly.dur), e = ease(u);
         controls.target.lerpVectors(fly.fT, fly.tT, e); camera.position.lerpVectors(fly.fP, fly.tP, e);
+        setZoom(fly.fZ * Math.pow(fly.tZ / fly.fZ, e));
         if (u >= 1) fly = null;
       }
       controls.update();
+      /* flux dots are sized in world units; an orthographic view needs that in screen pixels */
+      if (flux) { const ppu = (stageH / 2) * camera.zoom; for (const m of fluxMats) if (m.isPointsMaterial) m.size = m.userData.size * ppu; }
       updateMarkers();
       renderer.render(scene, camera);
     }

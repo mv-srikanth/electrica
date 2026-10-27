@@ -1049,7 +1049,7 @@
     ['A531', 'B531', 'A831', 'B831'].forEach((id) => { indoor[id] = 1; });
 
     return {
-      root: root, pickables: pickables, labels: labels, dims: dims, routes: routes,
+      root: root, pickables: pickables, labels: labels, dims: dims, routes: routes, ground: grass,
       upper: upper, roof: roofG, earth: earthG, apply: apply, update: update, snap: snap,
       boundsOf: boundsOf, isIndoor: (eq) => !!indoor[eq], panelZ: panelZ, PX: PX,
     };

@@ -241,6 +241,7 @@ window.ND = (function () {
     const prevB = $('#prev'), nextB = $('#next'), playB = $('#play'), firstB = $('#first'), lastB = $('#last'), rndB = $('#rnd');
     const plateEl = $('#plate'), detailEl = $('#detail'), principleEl = $('#principle'), slipsEl = $('#slips'), stepCount = $('#stepCount');
     const kickEl = $('#tKick'), progEl = $('#progBar');
+    const cFig = $('#cFig'), cTitle = $('#cTitle'), cRead = $('#cRead');   /* the figure card's corners */
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let ti = -1, k = 0, playing = false, playT = null, raf = 0, drawnK = -1, drawnT = -1, lastW = 0, lastH = 0;
 
@@ -263,6 +264,8 @@ window.ND = (function () {
       $('#tName').textContent = t.name;
       $('#tSub').textContent = t.sub;
       if (kickEl) kickEl.textContent = 'Topic ' + pad2(i + 1) + ' of ' + pad2(topics.length) + ' · ' + t.kind;
+      if (cFig) cFig.textContent = 'Fig ' + (i + 1);
+      if (cTitle) cTitle.textContent = t.short;
       principleEl.innerHTML = '<h2 class="eyebrow">The idea</h2><p>' + esc(t.principle) + '</p><div class="formulas">' + t.formulas.map((f) => '<div class="formula">' + esc(f) + '</div>').join('') + '</div>';
       slipsEl.innerHTML = '<h2 class="eyebrow">Common slips</h2><ul class="slips">' + t.slips.map((s) => '<li>' + esc(s) + '</li>').join('') + '</ul>';
       renderControls(); recompute(); renderAll();
@@ -298,6 +301,7 @@ window.ND = (function () {
     function renderWalk() {
       const m = T().m, st = steps(), cust = m && m.counter;
       if (progEl) progEl.style.width = !st.length ? '0%' : cust ? '100%' : ((k + 1) / st.length * 100).toFixed(2) + '%';
+      if (cRead) cRead.textContent = !st.length ? 'Waiting for a valid input' : cust ? cust.label : 'Step ' + pad2(k + 1) + ' / ' + pad2(st.length);
       if (!st.length) {
         walkText.innerHTML = '<b>No steps</b>Fix the input above';
         prevB.disabled = nextB.disabled = playB.disabled = true; lastB.hidden = firstB.hidden = false;

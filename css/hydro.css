@@ -1,0 +1,60 @@
+/* Electrica Hydro page. Builds on base.css and style.css (the figure card, rail, information column).
+   The colours below are read by the 3D model: ground, rock and river bank, contour lines, water,
+   rock beds on the cut faces, the soil band, the halo under the block and the tunnel drawn through the hill. */
+:root {
+  --ground: #9EA185; --rock: #9A958A; --bank: #C4BCA6; --contour: #2F3029; --contour-a: 0.3;
+  --water: #6F9DC6; --strata: #FFFFFF; --soil: #8B7B62; --halo-a: 0.28; --xray: #4D6E8C;
+  --flowdot: #3F9BFF; --powerdot: #E8761E;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #57584A; --rock: #5D5951; --bank: #6C665A; --contour: #E8E6DC; --contour-a: 0.1;
+    --water: #315E80; --strata: #8A8A86; --soil: #5A4D3C; --halo-a: 0.65; --xray: #7D9DBC; --powerdot: #FF8A3D;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #57584A; --rock: #5D5951; --bank: #6C665A; --contour: #E8E6DC; --contour-a: 0.1;
+  --water: #315E80; --strata: #8A8A86; --soil: #5A4D3C; --halo-a: 0.65; --xray: #7D9DBC; --powerdot: #FF8A3D;
+}
+
+/* labels on the model */
+.labels { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.lab {
+  position: absolute; left: 0; top: 0; pointer-events: auto; cursor: pointer; white-space: nowrap; will-change: transform;
+  font-family: var(--mono); font-size: 11px; font-weight: 500; line-height: 1.2; padding: 3px 7px;
+  border: 1px solid var(--line2); background: color-mix(in srgb, var(--panel) 92%, transparent); color: var(--ink);
+}
+.lab:hover { border-color: var(--ink); }
+.lab-in { border-style: dashed; }
+.lab.on { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.tip { position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; background: var(--ink); color: var(--panel); font-size: 12px; padding: 4px 8px; white-space: nowrap; }
+.hydro .stage .corner { padding: 2px 6px; background: color-mix(in srgb, var(--panel) 80%, transparent); }
+
+/* readings under the figure */
+.supply { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px 4px 8px; background: var(--panel); border: 1px solid var(--line2); font-size: 12.5px; line-height: 1.3; white-space: nowrap; }
+.chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--mid); flex: none; }
+.chip b { font-family: var(--mono); font-weight: 500; font-size: 12px; font-variant-numeric: tabular-nums; }
+.chip.c-head i, .chip.c-flow i, .chip.c-surge i { background: var(--flowdot); }
+.chip.c-mw i { background: var(--powerdot); }
+.chip.c-spill i { background: var(--flowdot); box-shadow: 0 0 0 3px color-mix(in srgb, var(--flowdot) 25%, transparent); }
+
+/* operating options */
+.opts { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+.opt { display: grid; gap: 5px; }
+.fl { font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.seg2 { display: inline-flex; border: 1px solid var(--line2); background: var(--raise); }
+.seg2 button { border: 0; background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; padding: 5px 11px; min-width: 34px; cursor: pointer; }
+.seg2 button + button { box-shadow: inset 1px 0 0 var(--line); }
+.seg2 button:hover { color: var(--ink); background: var(--sunk); }
+.seg2 button[aria-pressed="true"] { background: var(--ink); color: var(--panel); font-weight: 600; box-shadow: none; }
+.calc .calc-note { font-family: var(--mono); font-size: 12px; }
+
+@media (min-width: 760px) {
+  .hydro .viewer { gap: 10px; }
+}
+@media (min-width: 1120px) and (max-height: 720px) {
+  .hydro .models { margin-bottom: 4px; }
+  .hydro .bay-head h1 { font-size: 26px; }
+  .hydro .bay-head p { margin-top: 3px; }
+}

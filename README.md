@@ -8,24 +8,29 @@ Interactive teaching pages for electrical engineering, grouped in three modules:
 | --- | --- | --- |
 | Machines | `index.html` | 3D machines you can take apart: series and parallel magnetic circuits, single-phase transformer, 1 MVA distribution transformer, DC shunt motor, induction motor, alternator |
 | Power systems | `substation.html` | A working 110 / 22 kV zone substation in 3D, with a live single-line diagram, switching, power flow, a guided tour and exercises |
+| Power systems | `hydro.html` | A 3 × 40 MW hydro power plant in 3D: the water's path from reservoir to tailrace, the surge tank, a cutaway powerhouse with Francis turbines, and live head, flow and power as you operate it |
 | Digital | `digital.html` | Digital electronics, Module 1: number systems worked step by step from the student's own numbers |
 
 The site is plain HTML, CSS and JavaScript. There is no build step and nothing to install.
-The three pages link to each other through the bar at the top right.
+The three pages link to each other through the bar at the top right, beside the theme switch.
 
 ## What is in this folder
 
 ```
 index.html                     Machines page; lists the machine files in the order they appear
 substation.html                Power systems page (zone substation)
+hydro.html                     Power systems page (hydro power plant)
 digital.html                   Digital electronics page; lists the topic files in order
 favicon.svg                    browser-tab icon
 README.md                      this file
 
-css/style.css                  colours, fonts and layout for Machines and Power systems (light and dark)
+css/base.css                   the shared look of all three pages: colours, fonts, header, figure card, buttons
+css/style.css                  layout for Machines, and the 3D figure card shared with Power systems
 css/substation.css             extra layout for the substation page
-css/digital.css                colours, fonts and layout for the Digital page (light and dark)
+css/hydro.css                  extra layout for the hydro page, and the colours of its ground and water
+css/digital.css                layout for the Digital page, and the colours of its drawings
 
+js/site.js                     the theme switch in the header (Auto, Light, Dark), shared by all pages
 js/core.js                     the 3D viewer and page logic for Machines (normally left alone)
 js/machines/                   one file per machine
     magnetic-circuit-series.js
@@ -43,6 +48,11 @@ js/power-systems/              one folder per power-systems model
         network.js             switching logic: what is live, earthed or dead
         sld.js                 the single-line diagram
         scene.js               the 3D model
+        app.js                 the page around them
+    hydro/
+        data.js                the components in the order the water meets them, the rating plate, formulas
+        model.js               the plant in numbers: heads, flows, efficiency, power and the surge tank
+        scene.js               the 3D model: the valley as a block, the dam, tunnel, penstock, powerhouse, line
         app.js                 the page around them
 
 js/digital/
@@ -63,7 +73,7 @@ js/vendor/                     three.js r128 (3D library, MIT licence), kept her
 
 ## Try it on your computer
 
-Double-click `index.html` (or `substation.html`, `digital.html`). It opens in your browser and
+Double-click `index.html` (or `substation.html`, `hydro.html`, `digital.html`). It opens in your browser and
 works without internet, which is handy in a lab. With internet it also loads the Google fonts;
 without, it falls back to the computer's own fonts.
 
@@ -132,10 +142,45 @@ numbers and fractions in any base from 2 to 16 give the right digits.
 The substation model is based on the TasNetworks *Substation General Equipment Detail and
 Layout Standard* (R1089602, July 2018): the equipment list in section 2, the 'H' arrangement in
 Appendix D and the single bus in Appendix F. Layout, dimensions and ratings marked "typical" are
-illustrative. Further power-systems models can sit beside it in `js/power-systems/` with their
-own page, linked from the bar at the top.
+illustrative.
 
-## Colours and themes
+The hydro power plant is a teaching example rather than a real station. Its numbers are typical
+of a medium-head storage plant:
 
-Every page follows the computer's light or dark setting. Colours are set once at the top of each
-CSS file as variables (`--copper`, `--flux`, `--good` and so on), with the dark values just below.
+- **Levels:** full reservoir 505 m, minimum drawdown 475 m, tailwater 400 m, dam crest 512 m.
+- **Units:** three 40 MW vertical Francis units at 100 m and 45 m³/s each, 300 rpm (20 poles, 50 Hz).
+- **Waterway:** a 1.8 km, 6 m tunnel with a 19.5 m surge tank.
+
+The page works these out from `js/power-systems/hydro/model.js`:
+
+- **Power:** P = ρ g Q H η.
+- **Net head:** the gross head, less friction in the tunnel and penstock, plus any surge in the tank.
+- **Turbine efficiency:** best near 85% of rated flow.
+- **Surge tank:** the tunnel's water column speeding up and slowing down. Its swing is shown 20 times
+  faster than real; the true period is about 4.5 minutes.
+
+The model is drawn as a block of valley cut out of the ground, with the tunnel and the surge shaft
+shown through the hill.
+
+Each power-systems model has its own page and a folder in `js/power-systems/`. A switch above the
+heading of each page moves between them; add a link there for any new model.
+
+## Look and themes
+
+The pages follow the figure style of the Anatomy skill (github.com/wheresryan22/anatomy):
+
+- Neutral paper tones, and square cards with a thin frame.
+- Each figure has small labels in its corners: **Fig n** at top left, the title at top right, how to
+  use it at bottom left, and a live readout at bottom right (for example `Exploded · 85% apart`,
+  `6 / 6 customers supplied · 43.6 MW`, `Step 03 / 06`).
+- Colour only where colour means something: phases, flux, live and dead circuits, the 1s in a number.
+- The Machines viewer uses an isometric camera, raised 30 degrees, so parallel edges stay parallel
+  as in a technical drawing. Drag still turns the machine and scrolling still zooms.
+
+The button at the top right of every page switches the colour theme: **Auto** follows the computer's
+light or dark setting, **Light** and **Dark** override it. The browser remembers the choice.
+Light usually reads better on a classroom projector.
+
+Colours are set once as variables (`--ink`, `--panel`, `--line` and so on) at the top of
+`css/base.css`, with the dark values just below. Page files add their own colours there too
+(`--copper`, `--flux`, `--live110` and so on).
