@@ -1,106 +1,75 @@
-/*
-  TEMPLATE FOR A NEW MACHINE  (a small pull-type solenoid, as a working example)
+/* ===================== Template for a new Digital topic =====================
+   1. Copy this file to js/digital/topics/NN-your-topic.js (NN sets nothing; order is the <script> order).
+   2. Add  <script src="js/digital/topics/NN-your-topic.js"></script>  to digital.html, before  ND.start().
+   3. Reload. The topic appears in the list on the left with its own controls, steps and drawing.
 
-  1. Copy this file and rename it, for example to js/machines/stepper-motor.js
-  2. Change id below to match the file name: 'stepper-motor'
-  3. In index.html, add a line above <script>Electrica.start();</script>:
-       <script src="js/machines/stepper-motor.js"></script>
-  4. Open index.html in a browser and click your machine. If something is wrong,
-     the viewer shows the error and the file to check (more detail in the browser console, F12).
+   How a topic works
+   - init()           returns the starting state, e.g. { num: '1011' }.
+   - controls(st)     returns HTML for the control bar, built with C.seg / C.input / C.select / C.range.
+                      Every control carries a key; the page writes the new value to st[key] and calls compute().
+   - set(st, key, v)  optional. Return true if you stored the value yourself (e.g. one number per base).
+   - random(st)       fills st with a fresh example (the "New example" button).
+   - compute(st)      does the arithmetic and returns { steps, plate, ... } or { err, errKey } for bad input.
+                      steps: [{ t: 'short title', d: 'one or two sentences', look: 'optional hint' }]
+                      plate: [['Label', 'value'], ...] for the Key values card, or a function (k) => rows.
+   - draw(c)          returns one SVG string for step c.k. c = { W, H, m, k, st, anim }:
+                      W x H is the board in pixels, m is what compute() returned.
+                      Draw what is true at step k, and give the newest part class nw(c) so it animates in.
+                      Mark the part the student should look at with  data-focus="1"  so the board scrolls to it.
 
-  Size and axes: the machines here are about 4 units across; keep yours similar so the
-  camera framing works. Put the shaft of a rotating machine along the z axis.
-
-  This file is not listed in index.html, so the example does not appear on the site.
+   Drawing kit (all return SVG text): S.cell(x, y, size, '7', 'hot'), S.bit(x, y, size, 1),
+   S.chip(cx, cy, r, '1') for a carry, S.t(x, y, 'text', 't-acc', { fs: 14, a: 'middle' }), S.lbl(x, y, 'LABEL'),
+   S.l(...) line, S.r(...) rect, S.p(d, 'arr') path, S.arrow(d, 'c', 'c') arrow, S.g(cls, delayMs, inner) group.
+   Cell classes: one, zero, hot (blue ring), sgn (red ring), okc (green ring), ghost (dashed), inv, gR, gY, gB, dim.
+   Text classes: t-mut, t-lbl, t-acc (orange), t-flux (blue), t-bad (red), t-good (green), t-disp (large), t-b (bold).
+   Number helpers: ND.parse(str, base, { maxInt, maxFrac }) -> { ip, fp } digit arrays or { err },
+   ND.ival(ip, r) BigInt value, ND.fval(fp, r) -> { num, den }, ND.toDigits(BigInt, r), ND.fmtN(ip, fp, r) '(1011)₂'.
 */
-Electrica.register({
-  id: 'solenoid-example',        // lower-case, no spaces; also the link: index.html#solenoid-example
-  short: 'Solenoid',             // name in the machine list and on the rating plate
-  name: 'Pull-type solenoid',    // large heading above the viewer
-  kind: 'Static · DC',           // small line under the name in the list
-  sub: 'Example machine · Template',
-  icon: '<circle cx="22" cy="22" r="16"/><text x="22" y="26">S</text>',  // drawing in a 44 x 44 box
-  plate: [['Type', 'Pull-type solenoid'], ['Voltage', '24 V DC'], ['Stroke', '10 mm'], ['Duty', '100% ED']],
-  principle: 'Current in the coil magnetises the steel path. The plunger is pulled into the coil to close the air gap, because that lowers the reluctance of the magnetic circuit.',
-  formulas: ['F ≈ μ0 · (N · I)² · A / (2 · g²)'],
-  fluxNote: 'Steady flux runs along the plunger, out through the front plate and back along the housing.',
+(function () {
+  const { S, C, clamp, nw, lblFs, fit, parse, ival, fmtN } = ND;
 
-  build: function (k, m) {
-    // k holds the helpers; m is the machine you are building.
-    const { THREE, V, TAU, part, add, annulus, cyl, makeFlux } = k;
+  function compute(st) {
+    const p = parse(st.num, 2, { maxInt: 16, maxFrac: 0 });
+    if (p.err) return { err: p.err, errKey: 'num' };
+    const ones = p.ip.filter((d) => d === 1).length;
+    const value = ival(p.ip, 2).toString();
+    return {
+      bits: p.ip, ones: ones, value: value,
+      steps: [
+        { t: 'Read the bits', d: 'The number ' + fmtN(p.ip, [], 2) + ' has ' + p.ip.length + ' bits.' },
+        { t: 'Count the 1s', d: 'There are ' + ones + ' ones. Its value is ' + value + ' in decimal.', look: 'The orange cells are the 1s.' },
+      ],
+      plate: [['Bits', String(p.ip.length)], ['Ones', String(ones)], ['Value', value]],
+    };
+  }
 
-    // part({...}) creates one entry in the components list.
-    // add(part, geometry, materialName, options) puts a piece of that part in the scene.
-    //   options.pos  [x, y, z]   where the piece sits
-    //   options.rot  [x, y, z]   rotation in radians
-    //   options.ex   [x, y, z]   how far it moves at 100% Separation (exploded view)
-    //   options.rotor true       the piece turns when the machine runs (see m.speed)
-    // Materials: lamA lamB steel copper copperDk board paint shaft alu carbon brass porcelain mica dark R Y B
-
-    const housing = part({
-      name: 'Housing and end plates',
-      role: 'Steel return path for the flux, and the case that holds everything together.',
-      material: 'Mild steel',
-      casing: true,                // casing parts fade out in Flux view so the inside shows
-    });
-    add(housing, annulus(1.3, 1.18, 2.6), 'paint');
-    const plate = annulus(1.3, 0.5, 0.12);
-    add(housing, plate, 'paint', { pos: [0, 0, 1.36], ex: [0, 0, 1.6] });
-    add(housing, plate, 'paint', { pos: [0, 0, -1.36], ex: [0, 0, -1.6] });
-
-    const former = part({
-      name: 'Coil former',
-      role: 'Insulating tube the coil is wound on. The plunger slides inside it.',
-      material: 'Glass-filled nylon',
-    });
-    add(former, annulus(0.6, 0.5, 2.5), 'board', { ex: [0, 1.6, 0] });
-
-    const coil = part({
-      name: 'Coil',
-      role: 'Many turns of wire. The current through it sets the magnetomotive force N · I.',
-      material: 'Enamelled copper wire',
-      look: 'Each copper ring here stands for a layer of turns.',
-    });
-    const turn = annulus(1.12, 0.62, 0.17);
-    for (let i = 0; i < 12; i++) add(coil, turn, i % 2 ? 'copperDk' : 'copper', { pos: [0, 0, -1.07 + i * 0.195], ex: [0, 2.6, 0] });
-
-    const plunger = part({
-      name: 'Plunger',
-      role: 'The moving steel core. It is pulled in until it meets the pole piece.',
-      material: 'Soft magnetic steel',
-      look: 'The small gap between plunger and pole piece is the air gap g in the force formula.',
-    });
-    add(plunger, cyl(0.46, 3.0), 'shaft', { pos: [0, 0, 0.9], rot: [Math.PI / 2, 0, 0], ex: [0, 0, 3.0] });
-
-    const stop = part({
-      name: 'Pole piece',
-      role: 'Fixed steel stop at the back. The plunger closes the gap against it.',
-      material: 'Soft magnetic steel',
-    });
-    add(stop, cyl(0.46, 0.7), 'steel', { pos: [0, 0, -1.0], rot: [Math.PI / 2, 0, 0], ex: [0, 0, -2.2] });
-
-    const term = part({
-      name: 'Terminals',
-      role: 'Connect the coil to the supply.',
-      material: 'Brass',
-    });
-    [-0.3, 0.3].forEach((z) => add(term, cyl(0.06, 0.3, 12), 'brass', { pos: [0, 1.42, z], ex: [0, 1.0, 0] }));
-
-    // Flux view: particles that travel round closed loops (arrays of points).
-    const loops = [];
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * TAU, c = Math.cos(a), s = Math.sin(a), r1 = 0.25, r2 = 1.24;
-      loops.push([V(r1 * c, r1 * s, -1.3), V(r1 * c, r1 * s, 1.36), V(r2 * c, r2 * s, 1.36), V(r2 * c, r2 * s, -1.36), V(r1 * c, r1 * s, -1.36)]);
-    }
-    const F = makeFlux(loops, 24, 0.22);     // particles per loop, particle size
-    m.fluxGroup.add(F.obj);
-    m.fluxUpdate = (t) => F.update(t * 0.8); // t is time in seconds; move the particles along their loops
-
-    // Lines on the small scope in Flux view. Colours: copper ink flux phR phY phB
-    m.waves = [{ label: 'Coil current (DC)', color: 'copper', f: () => 0.6 }];
-
-    m.speed = 0;                             // rad/s for pieces added with rotor: true. 0 = no moving parts
-    m.cutNormals = [[-1, 0, 0], [0, -1, 0]]; // Cutaway removes the quarter where x > 0 and y > 0
-    m.camDir = [6, 3.5, 7];                  // direction the camera starts from
-  },
-});
+  ND.register({
+    id: 'my-topic',                       /* used in the address: digital.html#my-topic */
+    short: 'My topic',                    /* name in the topic list */
+    kind: 'One-line description',         /* line under the name, and the kicker over the title */
+    name: 'My topic, full title',         /* the big title on the board */
+    sub: 'A short subtitle',
+    icon: '<rect x="6" y="12" width="32" height="20" rx="3"/><text x="22" y="26.5">01</text>',  /* 44 x 44 */
+    principle: 'Two or three sentences on the idea behind the topic.',
+    formulas: ['A key relation', 'Another key relation'],
+    slips: ['A mistake students often make.'],
+    init: () => ({ num: '101101' }),
+    controls: (st) => C.input('num', 'Binary number', st.num, 18, 'numeric'),
+    random(st) { let s = '1'; for (let i = 0; i < 7; i++) s += Math.random() < 0.5 ? '0' : '1'; st.num = s; },
+    compute: compute,
+    draw(c) {
+      const W = c.W, m = c.m, k = c.k, n = m.bits.length;
+      const s = Math.floor(clamp((W - 40) / (n * 1.2), 22, 64)), gap = Math.round(s * 0.2);
+      const x0 = Math.round((W - (n * (s + gap) - gap)) / 2);
+      let o = S.lbl(x0, 30, 'The number', lblFs(W)), y = 44;
+      m.bits.forEach((d, i) => { o += S.bit(x0 + i * (s + gap), y, s, d, k === 1 && d === 1 ? 'hot' : ''); });
+      y += s + 30;
+      if (k >= 1) {
+        const txt = m.ones + ' ones · value ' + m.value;
+        o += S.g(nw(c), 0, S.t(x0, y + 24, txt, 't-disp', { fs: fit(txt, W - 2 * x0, 32, 0.6) }), 'data-focus="1"');
+        y += 50;
+      }
+      return S.svg(W, y + 10, 'My topic drawing', o);
+    },
+  });
+})();
