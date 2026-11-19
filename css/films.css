@@ -1,0 +1,21 @@
+/* Electrica: the Films page. One film in a figure card, with notes beside it. */
+.app { max-width: 1920px; margin: 0 auto; }
+.films { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "fig" "info"; padding-top: 16px; }
+.bay-top { grid-area: head; }
+.bay-head h1 { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 6vw, 34px); line-height: 1.02; margin: 4px 0 0; }
+.bay-head p:last-child { margin-top: 5px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.film { grid-area: fig; margin: 0; display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--frame); min-width: 0; }
+.film .fig-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 10px 16px; }
+.film .corner { position: static; font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; color: var(--muted); }
+.film .c-title, .film .c-hint { text-transform: uppercase; }
+.film .stage { background: #0E1116; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.film video { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; background: #0E1116; }
+.film-info { grid-area: info; display: grid; gap: 16px; align-content: start; }
+.film-info .card { background: var(--panel); border: 1px solid var(--line2); padding: 16px 18px; }
+.film-info .eyebrow { margin: 0 0 8px; }
+.film-info p, .film-info li { font-size: 15px; line-height: 1.5; color: var(--ink2); margin: 0; }
+.film-info ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.film-info a { color: var(--ink); text-underline-offset: 3px; }
+@media (min-width: 1000px) {
+  .films { grid-template-columns: minmax(0, 1fr) 360px; grid-template-areas: "head head" "fig info"; }
+}

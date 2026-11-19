@@ -172,3 +172,9 @@ input[type="range"] { accent-color: var(--ink); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; scroll-behavior: auto !important; }
 }
+
+/* four sections in the bar: tighten it on narrow phones so every link fits */
+@media (max-width: 480px) {
+  .sitenav a { padding: 8px 4px; gap: 5px; font-size: 10.5px; letter-spacing: .04em; }
+  .sitenav a svg { width: 13px; height: 13px; }
+}

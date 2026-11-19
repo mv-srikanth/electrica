@@ -10,6 +10,7 @@ Interactive teaching pages for electrical engineering, grouped in three modules:
 | Power systems | `substation.html` | A working 110 / 22 kV zone substation in 3D, with a live single-line diagram, switching, power flow, a guided tour and exercises |
 | Power systems | `hydro.html` | A 3 × 40 MW hydro power plant in 3D: the water's path from reservoir to tailrace, the surge tank, a cutaway powerhouse with Francis turbines, and live head, flow and power as you operate it |
 | Digital | `digital.html` | Digital electronics, Module 1: number systems worked step by step from the student's own numbers |
+| Films | `films.html` | Short animated films. Film 01: Prim & Sec, the two windings of a transformer, talk through how it works |
 
 The site is plain HTML, CSS and JavaScript. There is no build step and nothing to install.
 The three pages link to each other through the bar at the top right, beside the theme switch.
@@ -21,6 +22,8 @@ index.html                     Machines page; lists the machine files in the ord
 substation.html                Power systems page (zone substation)
 hydro.html                     Power systems page (hydro power plant)
 digital.html                   Digital electronics page; lists the topic files in order
+films.html                     Films page; plays the video in media/
+media/                         the film (prim-sec-transformer-talk.mp4) and its poster picture
 favicon.svg                    browser-tab icon
 README.md                      this file
 
@@ -29,6 +32,7 @@ css/style.css                  layout for Machines, and the 3D figure card share
 css/substation.css             extra layout for the substation page
 css/hydro.css                  extra layout for the hydro page, and the colours of its ground and water
 css/digital.css                layout for the Digital page, and the colours of its drawings
+css/films.css                  layout for the Films page
 
 js/site.js                     the theme switch in the header (Auto, Light, Dark), shared by all pages
 js/core.js                     the 3D viewer and page logic for Machines (normally left alone)
