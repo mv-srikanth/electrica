@@ -32,9 +32,11 @@ css/style.css                  layout for Machines, and the 3D figure card share
 css/substation.css             extra layout for the substation page
 css/hydro.css                  extra layout for the hydro page, and the colours of its ground and water
 css/digital.css                layout for the Digital page, and the colours of its drawings
+css/fresh.css                  the fresh look, loaded last on every page: colours, the accent, rounded cards, larger buttons
 css/films.css                  layout for the Films page
 
 js/site.js                     the theme switch in the header (Auto, Light, Dark), shared by all pages
+js/ux.js                       icons on the view buttons, zoom and reset buttons on each 3D figure, the how-to-move chip
 js/core.js                     the 3D viewer and page logic for Machines (normally left alone)
 js/machines/                   one file per machine
     magnetic-circuit-series.js

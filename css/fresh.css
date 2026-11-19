@@ -1,0 +1,201 @@
+/* Electrica: the fresh look, loaded last on every page.
+   Aims: easier to see (larger text, stronger contrast), easier to use (bigger buttons, one clear
+   accent colour for "this is selected" and "press this"), and softer cards with rounded corners.
+   It only overrides colours, sizes and shapes; the layout stays in the page files before it. */
+:root {
+  --bg: #EDF1F6;
+  --panel: #FFFFFF;
+  --raise: #FFFFFF;
+  --sunk: #F2F5F9;
+  --track: #DDE3EB;
+  --ink: #0E1726;
+  --ink2: #253041;
+  --muted: #4A5567;
+  --hi: #1B2535;
+  --mid: #6B7686;
+  --lo: #A3ADBB;
+  --faint: #D5DCE5;
+  --frame: #B9C3D0;
+  --line: #DFE5EC;
+  --line2: #C2CBD7;
+  --lit: #1D4FD8;
+  --accent: #1D4FD8;
+  --accent-hi: #1740B4;
+  --on-accent: #FFFFFF;
+  --tint: #E6EDFD;
+  --brand: #C4621F;
+  --stage: #FBFCFD;
+  --bench: #E9EDF2;
+  --r: 14px;
+  --r-sm: 10px;
+  --card: 0 1px 2px rgba(14, 23, 38, .05), 0 6px 16px -6px rgba(14, 23, 38, .10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1016; --panel: #141B24; --raise: #1A232E; --sunk: #10161D; --track: #0E141B;
+    --ink: #EAF0F6; --ink2: #C6D0DB; --muted: #9AA7B5;
+    --hi: #D5DEE8; --mid: #7C8998; --lo: #465362; --faint: #2A3541; --frame: #3A4755; --line: #232D38; --line2: #364352;
+    --lit: #8DB2FF; --accent: #8DB2FF; --accent-hi: #A9C5FF; --on-accent: #0B1016; --tint: #1B2A45;
+    --stage: #121922; --bench: #18212B;
+    --card: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 18px -8px rgba(0, 0, 0, .5);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1016; --panel: #141B24; --raise: #1A232E; --sunk: #10161D; --track: #0E141B;
+  --ink: #EAF0F6; --ink2: #C6D0DB; --muted: #9AA7B5;
+  --hi: #D5DEE8; --mid: #7C8998; --lo: #465362; --faint: #2A3541; --frame: #3A4755; --line: #232D38; --line2: #364352;
+  --lit: #8DB2FF; --accent: #8DB2FF; --accent-hi: #A9C5FF; --on-accent: #0B1016; --tint: #1B2A45;
+  --stage: #121922; --bench: #18212B;
+  --card: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 18px -8px rgba(0, 0, 0, .5);
+}
+
+body { font-size: 16px; }
+input[type="range"] { accent-color: var(--accent); min-height: 28px; cursor: pointer; }
+:where(button, input, select, a, [tabindex]):focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* ---------- header ---------- */
+.top { padding: 14px 0 13px; }
+.sitenav { border: 1px solid var(--line2); border-radius: 13px; background: var(--panel); padding: 4px; gap: 4px; box-shadow: var(--card); }
+.sitenav a { font-family: var(--body); font-size: 14.5px; font-weight: 600; letter-spacing: 0; text-transform: none; border-radius: 9px; color: var(--ink2); min-height: 38px; }
+.sitenav a + a { border-left: 0; }
+.sitenav a:hover { background: var(--sunk); color: var(--ink); }
+.sitenav a[aria-current="page"] { background: var(--accent); color: var(--on-accent); }
+.sitenav a svg { width: 17px; height: 17px; }
+.theme-btn { width: 44px; height: 44px; border-radius: 12px; box-shadow: var(--card); }
+.theme-btn svg { width: 20px; height: 20px; }
+.sec-t { color: var(--ink); }
+@media (max-width: 480px) {
+  .sitenav a { padding: 8px 4px; gap: 5px; font-size: 12.5px; letter-spacing: 0; }
+  .sitenav a svg { display: none; }
+}
+
+/* ---------- cards ---------- */
+.machines, .parts, .detail, .calc, .principle, .plate, .tabpanel, .walk, .scope, .film, .film-info .card, .fig, .tabs, .topics {
+  border-radius: var(--r); box-shadow: var(--card); border-color: var(--line2);
+}
+.machines, .parts, .tabs, .film, .fig, .topics { overflow: hidden; }
+.detail.empty { box-shadow: none; }
+.plate::before { border-radius: 10px; }
+.stage { border-radius: var(--r); box-shadow: var(--card); border-color: var(--frame); }
+.film .stage { border-radius: 0; box-shadow: none; }
+.formula { border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; }
+.diagram { border-radius: 10px; }
+.eyebrow { color: var(--ink2); font-weight: 600; }
+
+/* ---------- lists: the selected row is tinted and marked in the accent colour ---------- */
+.mbtn { min-height: 52px; }
+.mbtn svg, .mbtn .ico { border-radius: 8px; }
+.mbtn[aria-current="true"] { background: var(--tint); }
+.mbtn[aria-current="true"]::before { background: var(--accent); }
+.mbtn[aria-current="true"] svg, .mbtn[aria-current="true"] .ico { color: var(--accent); border-color: var(--accent); }
+.parts button { padding: 10px 12px; min-height: 42px; }
+.parts button[aria-pressed="true"] { background: var(--tint); }
+.parts button[aria-pressed="true"]::before { background: var(--accent); width: 4px; }
+.parts button[aria-pressed="true"] .num { background: transparent; color: var(--accent); }
+
+/* ---------- buttons ---------- */
+.tool, .navbtn, .swap, .walk button {
+  min-height: 40px; padding: 8px 14px; border-radius: var(--r-sm); font-size: 14.5px; font-weight: 600; color: var(--ink2);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.tool:hover, .navbtn:hover:not(:disabled), .walk button:hover { background: var(--sunk); border-color: var(--mid); color: var(--ink); }
+.tool[aria-pressed="true"], .tour-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.tool svg, .seg button svg, .run svg { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.navbtn.primary, .op { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.navbtn.primary:hover:not(:disabled), .op:hover { background: var(--accent-hi); border-color: var(--accent-hi); color: var(--on-accent); }
+.op { min-height: 42px; border-radius: var(--r-sm); }
+/* layer switches keep their tick box; only the box takes the accent */
+.layers .tool[aria-pressed="true"] { background: var(--panel); border-color: var(--line2); color: var(--ink); }
+.layers .tool::before { width: 14px; height: 14px; border-radius: 4px; border-width: 1.5px; }
+.layers .tool[aria-pressed="true"]::before { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 2.5px var(--panel); }
+
+/* segmented choices: one rounded track, the chosen option filled */
+.seg, .seg2, .sg, .models, .tabs { border-radius: 12px; padding: 4px; gap: 4px; background: var(--panel); border-color: var(--line2); }
+.seg { box-shadow: var(--card); }
+.seg button, .seg2 button, .sg button, .tabs button, .models a {
+  border-radius: 8px; min-height: 38px; font-size: 14.5px; font-weight: 600; color: var(--ink2);
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+}
+.seg button + button, .seg2 button + button, .sg button + button, .tabs button + button, .models a + a, .seg button:nth-child(4) { box-shadow: none; border-left: 0; }
+.models a { font-family: var(--body); letter-spacing: 0; text-transform: none; padding: 6px 12px; min-height: 34px; }
+.seg button[aria-pressed="true"], .seg2 button[aria-pressed="true"], .sg button[aria-pressed="true"], .tabs button[aria-selected="true"], .models a[aria-current="page"] {
+  background: var(--accent); color: var(--on-accent);
+}
+.tabs { box-shadow: var(--card); }
+
+/* the main action */
+.run { min-height: 42px; padding: 8px 18px; border-radius: var(--r-sm); font-size: 15px; background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.run:hover:not(:disabled) { background: var(--accent-hi); border-color: var(--accent-hi); }
+.run[aria-pressed="true"] { background: var(--panel); color: var(--ink); border-color: var(--line2); }
+.run[aria-pressed="true"]:hover { background: var(--sunk); }
+.run:disabled { background: var(--sunk); border-color: var(--line2); color: var(--muted); }
+.slider { color: var(--ink2); font-weight: 500; }
+.prog { height: 4px; border-radius: 2px; }
+.prog i { background: var(--accent); }
+.fld input[type="text"]:focus, .fld select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--tint); }
+
+/* ---------- figure: corner labels, part markers, chips ---------- */
+.corner { color: var(--ink2); }
+.stage .c-hint { display: none; }                 /* the how-to-move chip (js/ux.js) replaces it */
+.marker { min-width: 30px; height: 26px; border-radius: 13px; font-size: 12.5px; }
+.marker:hover { border-color: var(--accent); color: var(--accent); }
+.marker[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.chip { border-radius: 999px; padding: 6px 12px 6px 10px; }
+.tip { border-radius: 8px; padding: 6px 10px; }
+
+/* ---------- zoom and reset buttons on a 3D figure (added by js/ux.js) ---------- */
+.viewpad { position: absolute; z-index: 3; right: 12px; bottom: 44px; display: grid; gap: 6px; }
+.viewpad button {
+  width: 42px; height: 42px; display: grid; place-items: center; padding: 0; cursor: pointer;
+  border: 1px solid var(--line2); border-radius: 12px; background: var(--panel); color: var(--ink2); box-shadow: var(--card);
+}
+.viewpad button:hover { border-color: var(--accent); color: var(--accent); }
+.viewpad button:active { background: var(--tint); }
+.viewpad svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- how to move the model: shown until the first touch, then on the ? button ---------- */
+.howto {
+  position: absolute; z-index: 3; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 6px 16px; flex-wrap: wrap; justify-content: center;
+  max-width: calc(100% - 130px); padding: 9px 16px; border-radius: 999px; background: var(--ink); color: var(--panel); box-shadow: var(--card);
+  font-size: 14px; font-weight: 500; line-height: 1.25; pointer-events: none; transition: opacity .4s, transform .4s;
+}
+.howto span { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.howto svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.howto.gone { opacity: 0; transform: translate(-50%, 8px); }
+@media (max-width: 560px) {
+  .howto { left: 10px; right: 62px; transform: none; max-width: none; border-radius: 14px; font-size: 13px; padding: 8px 12px; }
+  .howto.gone { transform: translateY(8px); }
+  .viewpad { right: 8px; bottom: 40px; }
+}
+.viewer:fullscreen .viewpad { bottom: 52px; }
+
+@media (min-width: 1600px) and (min-height: 900px) {
+  body { font-size: 17px; }
+  .sitenav a { font-size: 15.5px; }
+  .tool, .navbtn, .seg button, .seg2 button, .sg button, .tabs button { font-size: 15.5px; }
+}
+
+/* toggles that are switched on are tinted, so the one filled button stays the main action */
+.tool[aria-pressed="true"], .tour-btn[aria-pressed="true"] { background: var(--tint); border-color: var(--accent); color: var(--accent); }
+@media (min-width: 760px) { #focusBtn { display: inline-flex; } }
+
+/* the substation figure is wide and short, with its layer switches on the right:
+   the view buttons sit in a row at the bottom left and the how-to chip at the top */
+.sub-viewer .viewpad { right: auto; left: 12px; bottom: 12px; grid-auto-flow: column; }
+.sub-viewer .howto { bottom: auto; top: 12px; }
+@media (max-width: 560px) { .sub-viewer .howto { left: 10px; right: 10px; top: 44px; } .sub-viewer .viewpad { left: 8px; bottom: 8px; } }
+
+/* substation on a desktop: the 3D yard keeps a useful height; if the screen is short, the middle column scrolls */
+@media (min-width: 1120px) and (min-height: 720px) {
+  .sub-main { overflow: auto; padding-right: 4px; scrollbar-width: thin; }
+  .sub-main { grid-template-rows: minmax(max(500px, 58vh), 1fr) auto; }
+  .sub-viewer { min-height: 0; }
+  .sld-wrap { height: clamp(190px, 26vh, 400px); }
+}
+
+/* phones: the separation slider takes its own full row */
+.slider { letter-spacing: .04em; }
+@media (max-width: 759px) {
+  .slider { flex: 1 1 100%; max-width: 100%; }
+  .slider output { min-width: 4ch; }
+}

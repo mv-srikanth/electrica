@@ -347,6 +347,8 @@ window.Electrica = (function () {
       flyTo(c, c.clone().addScaledVector(d, CAM_DIST), Math.min(1, aspect) / half);
     }
     controls.addEventListener('start', () => { fly = null; });
+    /* the Reset view button (js/ux.js) calls this: frame the machine again from its starting direction */
+    window.ElectricaResetView = () => { if (cur) frameView(state.sepTarget, false, isoDir(cur.camDir)); };
 
     /* ---------- material looks ---------- */
     const hl = new THREE.Color();

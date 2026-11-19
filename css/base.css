@@ -68,7 +68,7 @@
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
-  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; margin: 0;
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; margin: 0;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-bottom: 14px;
   -webkit-font-smoothing: antialiased;
@@ -91,16 +91,16 @@ input[type="range"] { accent-color: var(--ink); }
 .brand-t { min-width: 0; }
 .word { font-family: var(--display); font-weight: 700; font-size: 22px; line-height: 1; letter-spacing: .24em; text-transform: uppercase; }
 .word span { color: var(--brand); }
-.credit { margin-top: 4px; font-size: 12px; line-height: 1.25; color: var(--muted); white-space: nowrap; }
+.credit { margin-top: 4px; font-size: 13.5px; line-height: 1.25; color: var(--muted); white-space: nowrap; }
 .credit b { font-weight: 600; color: var(--ink2); }
 .section { display: none; min-width: 0; flex: 0 1 auto; padding-left: 18px; border-left: 1px solid var(--line); }
-.sec-t { font-family: var(--mono); font-weight: 500; font-size: 11.5px; line-height: 1.2; letter-spacing: .12em; text-transform: uppercase; color: var(--ink2); white-space: nowrap; }
-.sec-s { margin-top: 4px; font-size: 12.5px; line-height: 1.3; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sec-t { font-family: var(--mono); font-weight: 500; font-size: 13px; line-height: 1.2; letter-spacing: .12em; text-transform: uppercase; color: var(--ink2); white-space: nowrap; }
+.sec-s { margin-top: 4px; font-size: 14px; line-height: 1.3; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .sitenav { order: 3; flex: 1 1 100%; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line2); }
 .sitenav a {
   display: flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 10px;
-  font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; line-height: 1.2;
+  font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; line-height: 1.2;
   color: var(--muted); text-decoration: none; white-space: nowrap; transition: color .15s, background .15s;
 }
 .sitenav a + a { border-left: 1px solid var(--line2); }
@@ -130,7 +130,7 @@ input[type="range"] { accent-color: var(--ink); }
 /* ---------- the figure card: a hairline frame with mono labels in its corners ---------- */
 .corner {
   position: absolute; z-index: 2; margin: 0; pointer-events: none;
-  font-family: var(--mono); font-size: 11px; line-height: 1.2; letter-spacing: .04em; color: var(--muted);
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.2; letter-spacing: .04em; color: var(--muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .c-fig { top: 16px; left: 18px; max-width: calc(30% - 24px); color: var(--ink2); }
@@ -145,13 +145,13 @@ input[type="range"] { accent-color: var(--ink); }
 
 /* ---------- labels, buttons, segmented choices ---------- */
 .eyebrow {
-  font-family: var(--mono); font-weight: 500; font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+  font-family: var(--mono); font-weight: 500; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
   margin: 0 0 10px; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 8px;
 }
 .eyebrow span { letter-spacing: .04em; text-transform: none; white-space: nowrap; }
 .tool {
   border: 1px solid var(--line2); background: var(--panel); color: var(--ink2); border-radius: var(--r-sm); padding: 7px 12px;
-  font-size: 13px; font-weight: 500; line-height: 1.25; cursor: pointer; white-space: nowrap;
+  font-size: 14.5px; font-weight: 500; line-height: 1.25; cursor: pointer; white-space: nowrap;
   transition: border-color .15s, background .15s, color .15s;
 }
 .tool:hover { border-color: var(--mid); color: var(--ink); }
@@ -161,11 +161,11 @@ input[type="range"] { accent-color: var(--ink); }
 /* ---------- projector-size screens: the small labels grow with the page ---------- */
 @media (min-width: 1600px) and (min-height: 900px) {
   body { font-size: 16px; }
-  .corner { font-size: 12.5px; }
+  .corner { font-size: 14px; }
   .c-fig, .c-title { top: 18px; } .c-hint, .c-read { bottom: 18px; }
-  .eyebrow, .sec-t, .sitenav a { font-size: 12.5px; }
-  .credit, .sec-s { font-size: 13px; }
-  .tool { font-size: 14px; }
+  .eyebrow, .sec-t, .sitenav a { font-size: 14px; }
+  .credit, .sec-s { font-size: 14.5px; }
+  .tool { font-size: 15px; }
   .word { font-size: 24px; }
 }
 
