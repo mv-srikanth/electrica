@@ -52,10 +52,11 @@
     <figure class="fig film">
       <div class="fig-row"><span class="corner c-fig">Fig 1</span><span class="corner c-title">Prim &amp; Sec</span></div>
       <div class="stage">
-        <video id="film" controls playsinline preload="metadata" poster="media/prim-sec-poster.jpg">
+        <video id="film" controls playsinline preload="metadata">
           <source src="media/prim-sec-transformer-talk.mp4" type="video/mp4">
           Your browser cannot play this video. <a href="media/prim-sec-transformer-talk.mp4">Download the film</a>.
         </video>
+        <p class="film-soon" id="filmSoon" hidden>This film is being uploaded. Please check back soon.</p>
       </div>
       <div class="fig-row"><span class="corner c-hint">Press play · Sound on</span><span class="corner c-read" id="filmRead">0:00</span></div>
     </figure>
@@ -90,6 +91,10 @@
   function f(t) { t = Math.floor(t || 0); return Math.floor(t / 60) + ':' + ('0' + (t % 60)).slice(-2); }
   function show() { r.textContent = f(v.currentTime) + (isFinite(v.duration) ? ' / ' + f(v.duration) : ''); }
   ['timeupdate', 'loadedmetadata', 'seeked'].forEach(function (e) { v.addEventListener(e, show); });
+  // if the video file is not on the site yet, say so instead of showing a broken player
+  function missing() { v.hidden = true; document.getElementById('filmSoon').hidden = false; r.textContent = ''; }
+  v.addEventListener('error', missing);
+  var src = v.querySelector('source'); if (src) src.addEventListener('error', missing);
 })();
 </script>
 </body>

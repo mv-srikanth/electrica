@@ -19,3 +19,4 @@
 @media (min-width: 1000px) {
   .films { grid-template-columns: minmax(0, 1fr) 360px; grid-template-areas: "head head" "fig info"; }
 }
+.film-soon { margin: 0; aspect-ratio: 16 / 9; display: grid; place-items: center; padding: 24px; text-align: center; font-family: var(--mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: #C9CDD3; }
